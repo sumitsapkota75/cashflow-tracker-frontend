@@ -521,7 +521,7 @@ export default function OpenMachine() {
                   Cancel
                 </button>
                 <button
-                  onClick={confirmAndSubmit}
+                onClick={confirmAndSubmit}
                   className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
                 >
                   Confirm & Submit

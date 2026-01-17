@@ -5,9 +5,8 @@ import { usePathname } from 'next/navigation';
 
 const tabs = [
   { name: "Dashboard", href: "/" },
-  { name: "Open Machine", href: "/machines/open" },
-  { name: "Day Close", href: "/machines/day-close" },
-  { name: "Reports", href: "/reports" },
+  { name: "Machine Entry", href: "/machines/open" },
+  { name: "Reports", href: "/machines/reports" },
 ];
 
 export default function Header() {
