@@ -1,5 +1,8 @@
+import { AuthGuard } from "./auth/authGuard";
+
 export default function Dashboard() {
   return (
+    <AuthGuard>
     <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-emerald-500">
@@ -16,5 +19,6 @@ export default function Dashboard() {
       </div>
     </div>
   </div>
+  </AuthGuard>
   );
 }

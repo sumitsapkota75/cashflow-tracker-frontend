@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NumberInput from "@/app/components/NumberInput";
 import ImageUpload, { ImageFile } from "@/app/components/ImageUpload";
 
@@ -8,6 +8,13 @@ type PayoutEntry = {
   id: string;
   amount: number | "";
   note: string;
+};
+
+type MachineReading = {
+  machineId: string;
+  cashIn: number | "";
+  voucherOut: number | "";
+  dailyNet: number;
 };
 
 export default function OpenMachine() {
@@ -24,6 +31,11 @@ export default function OpenMachine() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [machineReadings, setMachineReadings] = useState<MachineReading[]>([]);
+  const [shiftCloseTotals, setShiftCloseTotals] = useState({
+    totalCashIn: "" as number | "",
+    totalVoucherOut: "" as number | "",
+  });
 
   const machines = [
     { id: "M001", name: "Machine 1 - Lobby" },
@@ -40,6 +52,61 @@ export default function OpenMachine() {
     "Customer Request",
     "End of Shift",
   ];
+
+  // Initialize machine readings when shift close is toggled
+  useEffect(() => {
+    if (formData.isShiftClose) {
+      const readings: MachineReading[] = machines.map(m => ({
+        machineId: m.id,
+        cashIn: "",
+        voucherOut: "",
+        dailyNet: 0
+      }));
+      setMachineReadings(readings);
+      setShiftCloseTotals({ totalCashIn: "", totalVoucherOut: "" });
+    } else {
+      setMachineReadings([]);
+      setShiftCloseTotals({ totalCashIn: "", totalVoucherOut: "" });
+    }
+  }, [formData.isShiftClose]);
+
+  // Calculate daily net for individual machine
+  const calculateDailyNet = (cashIn: number | "", voucherOut: number | ""): number => {
+    const cash = typeof cashIn === 'number' ? cashIn : 0;
+    const voucher = typeof voucherOut === 'number' ? voucherOut : 0;
+    return cash - voucher;
+  };
+
+  // Update machine reading
+  const updateMachineReading = (machineId: string, field: 'cashIn' | 'voucherOut', value: number | "") => {
+    setMachineReadings(prev => {
+      const updated = prev.map(reading => {
+        if (reading.machineId === machineId) {
+          const updatedReading = { ...reading, [field]: value };
+          updatedReading.dailyNet = calculateDailyNet(updatedReading.cashIn, updatedReading.voucherOut);
+          return updatedReading;
+        }
+        return reading;
+      });
+      
+      // Auto-update totals when machine readings change
+      const totalCashIn = updated.reduce((sum, r) => sum + (typeof r.cashIn === 'number' ? r.cashIn : 0), 0);
+      const totalVoucherOut = updated.reduce((sum, r) => sum + (typeof r.voucherOut === 'number' ? r.voucherOut : 0), 0);
+      setShiftCloseTotals({
+        totalCashIn: totalCashIn,
+        totalVoucherOut: totalVoucherOut
+      });
+      
+      return updated;
+    });
+  };
+
+  // Calculate totals
+  const getTotalNet = () => {
+    const cashIn = typeof shiftCloseTotals.totalCashIn === 'number' ? shiftCloseTotals.totalCashIn : 0;
+    const voucherOut = typeof shiftCloseTotals.totalVoucherOut === 'number' ? shiftCloseTotals.totalVoucherOut : 0;
+    return cashIn - voucherOut;
+  };
 
   const toggleMachine = (machineId: string) => {
     if (formData.machineIds.includes(machineId)) {
@@ -109,6 +176,25 @@ export default function OpenMachine() {
         newErrors[`payout_note_${index}`] = "Enter payout note";
       }
     });
+
+    // Validate machine readings if shift close
+    if (formData.isShiftClose) {
+      machineReadings.forEach((reading, index) => {
+        if (!reading.cashIn || reading.cashIn <= 0) {
+          newErrors[`machine_cashin_${index}`] = "Enter cash in";
+        }
+        if (!reading.voucherOut || reading.voucherOut < 0) {
+          newErrors[`machine_voucherout_${index}`] = "Enter voucher out";
+        }
+      });
+      
+      if (!shiftCloseTotals.totalCashIn || shiftCloseTotals.totalCashIn <= 0) {
+        newErrors.totalCashIn = "Enter total cash in";
+      }
+      if (!shiftCloseTotals.totalVoucherOut || shiftCloseTotals.totalVoucherOut < 0) {
+        newErrors.totalVoucherOut = "Enter total voucher out";
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -118,8 +204,6 @@ export default function OpenMachine() {
     if (!validateForm()) {
       return;
     }
-
-    // Show confirmation modal instead of submitting directly
     setShowConfirmModal(true);
   };
 
@@ -127,11 +211,12 @@ export default function OpenMachine() {
     setShowConfirmModal(false);
     setIsSubmitting(true);
 
-    // Format payouts as requested: ["1000", "previous winner", "500", "jackpot winner"]
     const payoutsList = payouts.flatMap(p => [
       p.amount.toString(),
       p.note
     ]);
+
+    const totalNet = getTotalNet();
 
     const submissionData = {
       machineIds: formData.machineIds,
@@ -142,6 +227,18 @@ export default function OpenMachine() {
       payouts: payoutsList,
       timestamp: new Date().toISOString(),
       imageCount: images.length,
+      // Include shift close data if applicable
+      ...(formData.isShiftClose && {
+        machineReadings: machineReadings.map(r => ({
+          machineId: r.machineId,
+          cashIn: r.cashIn,
+          voucherOut: r.voucherOut,
+          dailyNet: r.dailyNet
+        })),
+        totalCashIn: shiftCloseTotals.totalCashIn,
+        totalVoucherOut: shiftCloseTotals.totalVoucherOut,
+        totalNet: totalNet
+      })
     };
 
     const formDataToSend = new FormData();
@@ -153,6 +250,13 @@ export default function OpenMachine() {
     formDataToSend.append("payouts", JSON.stringify(payoutsList));
     formDataToSend.append("timestamp", submissionData.timestamp);
     
+    if (formData.isShiftClose) {
+      formDataToSend.append("machineReadings", JSON.stringify(machineReadings));
+      formDataToSend.append("totalCashIn", (shiftCloseTotals.totalCashIn || 0).toString());
+      formDataToSend.append("totalVoucherOut", (shiftCloseTotals.totalVoucherOut || 0).toString());
+      formDataToSend.append("totalNet", totalNet.toString());
+    }
+    
     images.forEach((img, index) => {
       formDataToSend.append(`image_${index}`, img.file);
     });
@@ -160,19 +264,14 @@ export default function OpenMachine() {
     console.log("Form Data to Submit:", submissionData);
 
     try {
-      // Uncomment for actual API call
-      // const response = await fetch('/api/open-machine', {
-      //   method: 'POST',
-      //   body: formDataToSend,
-      // });
-      // if (response.ok) { ... }
-
       await new Promise(resolve => setTimeout(resolve, 1500));
       alert(`Success! Submitted:\n${JSON.stringify(submissionData, null, 2)}`);
       
       setFormData({ machineIds: [], selectAll: false, cashAmount: "", safeDropped: "", reason: "", isShiftClose: false });
       setPayouts([]);
       setImages([]);
+      setMachineReadings([]);
+      setShiftCloseTotals({ totalCashIn: "", totalVoucherOut: "" });
       setErrors({});
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -181,6 +280,8 @@ export default function OpenMachine() {
       setIsSubmitting(false);
     }
   };
+
+  const totalNet = getTotalNet();
 
   return (
     <div className="bg-gradient-to-b from-emerald-500/5 to-transparent min-h-screen p-4 md:p-6">
@@ -221,7 +322,6 @@ export default function OpenMachine() {
                 ))}
               </select>
               
-              {/* Selected Machines Display */}
               {formData.machineIds.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {formData.selectAll ? (
@@ -304,20 +404,6 @@ export default function OpenMachine() {
               )}
             </div>
 
-            {/* Shift Close Checkbox */}
-            <div className="flex items-center p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
-              <input
-                type="checkbox"
-                id="shift-close"
-                checked={formData.isShiftClose}
-                onChange={(e) => setFormData({ ...formData, isShiftClose: e.target.checked })}
-                className="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
-              />
-              <label htmlFor="shift-close" className="ml-3 text-lg font-medium text-amber-900 cursor-pointer">
-                Is this a shift close?
-              </label>
-            </div>
-
             {/* Payout Section */}
             <div className="border-2 border-slate-200 rounded-xl p-4">
               <div className="flex items-center justify-between mb-4">
@@ -359,8 +445,10 @@ export default function OpenMachine() {
                           <input
                             type="number"
                             inputMode="decimal"
+                            min="0"
+                            step="0.01"
                             value={payout.amount}
-                            onChange={(e) => updatePayout(payout.id, 'amount', Number(e.target.value))}
+                            onChange={(e) => updatePayout(payout.id, 'amount', e.target.value === "" ? "" : Number(e.target.value))}
                             placeholder="0.00"
                             className={`w-full text-lg p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
                               errors[`payout_amount_${index}`] ? "border-red-500" : ""
@@ -395,6 +483,148 @@ export default function OpenMachine() {
 
             {/* Image Upload */}
             <ImageUpload images={images} setImages={setImages} maxImages={10} />
+
+            {/* Shift Close Checkbox - Moved to bottom */}
+            <div className="flex items-center p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
+              <input
+                type="checkbox"
+                id="shift-close"
+                checked={formData.isShiftClose}
+                onChange={(e) => setFormData({ ...formData, isShiftClose: e.target.checked })}
+                className="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
+              />
+              <label htmlFor="shift-close" className="ml-3 text-lg font-medium text-amber-900 cursor-pointer">
+                Is this a shift close?
+              </label>
+            </div>
+
+            {/* Machine Readings - Only shown if shift close */}
+            {formData.isShiftClose && (
+              <div className="border-2 border-amber-300 rounded-xl p-6 bg-amber-50">
+                <h3 className="text-xl font-bold text-amber-900 mb-4">Machine Readings</h3>
+                
+                <div className="space-y-4">
+                  {machineReadings.map((reading, index) => {
+                    const machine = machines.find(m => m.id === reading.machineId);
+                    return (
+                      <div key={reading.machineId} className="bg-white rounded-lg p-4 border-2 border-slate-200">
+                        <h4 className="font-semibold text-slate-800 mb-3">{machine?.name}</h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Cash In ($)</label>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              step="0.01"
+                              value={reading.cashIn}
+                              onChange={(e) => updateMachineReading(
+                                reading.machineId, 
+                                'cashIn', 
+                                e.target.value === "" ? "" : Number(e.target.value)
+                              )}
+                              placeholder="0.00"
+                              className={`w-full text-lg p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                                errors[`machine_cashin_${index}`] ? "border-red-500" : ""
+                              }`}
+                            />
+                            {errors[`machine_cashin_${index}`] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[`machine_cashin_${index}`]}</p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Voucher Out ($)</label>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              step="0.01"
+                              value={reading.voucherOut}
+                              onChange={(e) => updateMachineReading(
+                                reading.machineId, 
+                                'voucherOut', 
+                                e.target.value === "" ? "" : Number(e.target.value)
+                              )}
+                              placeholder="0.00"
+                              className={`w-full text-lg p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                                errors[`machine_voucherout_${index}`] ? "border-red-500" : ""
+                              }`}
+                            />
+                            {errors[`machine_voucherout_${index}`] && (
+                              <p className="text-red-500 text-xs mt-1">{errors[`machine_voucherout_${index}`]}</p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Daily Net ($)</label>
+                            <div className="w-full text-lg p-3 border-2 border-blue-200 rounded-lg bg-blue-50 font-bold text-blue-700">
+                              ${reading.dailyNet.toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Totals */}
+                <div className="mt-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+                  <h4 className="text-lg font-bold mb-4">Totals</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Total Cash In ($)</label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        value={shiftCloseTotals.totalCashIn}
+                        onChange={(e) => setShiftCloseTotals({
+                          ...shiftCloseTotals,
+                          totalCashIn: e.target.value === "" ? "" : Number(e.target.value)
+                        })}
+                        placeholder="0.00"
+                        className={`w-full text-2xl font-bold p-3 rounded-lg bg-white text-slate-800 focus:ring-2 focus:ring-blue-300 ${
+                          errors.totalCashIn ? "border-2 border-red-500" : ""
+                        }`}
+                      />
+                      {errors.totalCashIn && (
+                        <p className="text-red-200 text-xs mt-1">{errors.totalCashIn}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-sm mb-2">Total Voucher Out ($)</label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="0.01"
+                        value={shiftCloseTotals.totalVoucherOut}
+                        onChange={(e) => setShiftCloseTotals({
+                          ...shiftCloseTotals,
+                          totalVoucherOut: e.target.value === "" ? "" : Number(e.target.value)
+                        })}
+                        placeholder="0.00"
+                        className={`w-full text-2xl font-bold p-3 rounded-lg bg-white text-slate-800 focus:ring-2 focus:ring-blue-300 ${
+                          errors.totalVoucherOut ? "border-2 border-red-500" : ""
+                        }`}
+                      />
+                      {errors.totalVoucherOut && (
+                        <p className="text-red-200 text-xs mt-1">{errors.totalVoucherOut}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-blue-200 text-sm mb-2">Total Net</p>
+                      <div className="text-3xl font-bold bg-white text-blue-700 rounded-lg p-3">
+                        ${totalNet.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
@@ -431,7 +661,6 @@ export default function OpenMachine() {
               </div>
 
               <div className="p-6 space-y-4">
-                {/* Machines */}
                 <div className="bg-slate-50 rounded-lg p-4">
                   <h4 className="text-sm font-semibold text-slate-500 uppercase mb-2">Machine(s)</h4>
                   <p className="text-lg text-slate-800">
@@ -444,7 +673,6 @@ export default function OpenMachine() {
                   </p>
                 </div>
 
-                {/* Cash Amount */}
                 {formData.cashAmount && (
                   <div className="bg-slate-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase mb-2">Cash Taken Out</h4>
@@ -454,7 +682,6 @@ export default function OpenMachine() {
                   </div>
                 )}
 
-                {/* Safe Dropped */}
                 {formData.safeDropped && (
                   <div className="bg-slate-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase mb-2">Safe Dropped Amount</h4>
@@ -464,7 +691,6 @@ export default function OpenMachine() {
                   </div>
                 )}
 
-                {/* Reason */}
                 {formData.reason && (
                   <div className="bg-slate-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase mb-2">Reason</h4>
@@ -472,19 +698,22 @@ export default function OpenMachine() {
                   </div>
                 )}
 
-                {/* Shift Close */}
                 {formData.isShiftClose && (
                   <div className="bg-amber-50 rounded-lg p-4 border-2 border-amber-300">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-3">
                       <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <p className="text-lg font-semibold text-amber-800">Shift Close Entry</p>
                     </div>
+                    <div className="bg-white rounded p-3 mt-2">
+                      <p className="text-sm text-slate-600 mb-1">Total Cash In: <span className="font-bold text-green-600">${(shiftCloseTotals.totalCashIn || 0).toFixed(2)}</span></p>
+                      <p className="text-sm text-slate-600 mb-1">Total Voucher Out: <span className="font-bold text-blue-600">${(shiftCloseTotals.totalVoucherOut || 0).toFixed(2)}</span></p>
+                      <p className="text-sm text-slate-600">Total Net: <span className="font-bold text-slate-800">${totalNet.toFixed(2)}</span></p>
+                    </div>
                   </div>
                 )}
 
-                {/* Payouts */}
                 {payouts.length > 0 && (
                   <div className="bg-slate-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase mb-3">Payouts ({payouts.length})</h4>
@@ -504,7 +733,6 @@ export default function OpenMachine() {
                   </div>
                 )}
 
-                {/* Images */}
                 {images.length > 0 && (
                   <div className="bg-slate-50 rounded-lg p-4">
                     <h4 className="text-sm font-semibold text-slate-500 uppercase mb-2">Images Attached</h4>
@@ -521,7 +749,7 @@ export default function OpenMachine() {
                   Cancel
                 </button>
                 <button
-                onClick={confirmAndSubmit}
+                  onClick={confirmAndSubmit}
                   className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
                 >
                   Confirm & Submit
@@ -530,7 +758,6 @@ export default function OpenMachine() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

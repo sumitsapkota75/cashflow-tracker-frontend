@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthGuard } from "@/app/auth/authGuard";
 import { useState, useMemo } from "react";
 
 type Entry = {
@@ -263,6 +264,7 @@ export default function Reports() {
   */
 
   return (
+    <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
     <div className="bg-gradient-to-b from-emerald-500/5 to-transparent min-h-screen p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
@@ -552,5 +554,6 @@ export default function Reports() {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 }
