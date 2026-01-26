@@ -42,6 +42,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       await login(data.token);
+      setLoading(false)
       router.push("/"); // dashboard
     } catch (err) {
       setError("Server unreachable. Please try again.");

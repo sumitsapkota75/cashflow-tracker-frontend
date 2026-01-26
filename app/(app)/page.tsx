@@ -1,4 +1,4 @@
-import { AuthGuard } from "../(auth)/authGuard";
+import { AuthGuard } from "../context/authGuard";
 
 export default function Dashboard() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { AuthGuard } from "@/app/(auth)/authGuard";
+import { AuthGuard } from "@/app/context/authGuard";
 import { useState, useMemo } from "react";
 
 type Entry = {

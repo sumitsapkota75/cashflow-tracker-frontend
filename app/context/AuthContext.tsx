@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { AuthState, AuthUser } from "../lib/auth";
 import { decodeJwt } from "../lib/jwt";
 
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ user, token, loading: false });
   }  , []);
 
-  function login(token: string) {
+  async function login(token: string) {
     const decoded = decodeJwt(token);
     if (!decoded) return;
 
@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("auth_token", token);
     setState({ user, token, loading: false });
   }
+  
   function logout() {
     localStorage.removeItem("auth_token");
     setState({ user: null, token: null, loading: false });
