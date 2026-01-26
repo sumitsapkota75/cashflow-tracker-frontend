@@ -26,7 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const decoded = decodeJwt(token);
-    console.log("Decoded JWT:", decoded);
     if (!decoded || decoded.exp * 1000 < Date.now()) {
       localStorage.removeItem("auth_token");
       setState({ user: null, token: null, loading: false });
@@ -36,7 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userId: decoded.userId ,
       email: decoded.email || decoded.sub,
       role: decoded.role,
+      businessName: decoded.businessName,
     };
+    console.log({user})
     setState({ user, token, loading: false });
   }  , []);
 
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userId: decoded.userId || decoded.sub,
       email: decoded.email,
       role: decoded.role,
+      businessName: decoded.businessName,
     };
 
     localStorage.setItem("auth_token", token);

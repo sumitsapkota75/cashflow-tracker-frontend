@@ -4,6 +4,7 @@ export interface AuthUser {
   userId: string;
   email: string;
   role: UserRole;
+  businessName?: string;
 }
 
 export interface AuthState {

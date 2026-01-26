@@ -1,5 +1,6 @@
 "use client"; // Required for hooks like usePathname
 
+import { useAuth } from '@/app/context/AuthContext';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,17 +12,28 @@ const tabs = [
 
 export default function Header() {
   const pathname = usePathname(); // Gets the current URL path
-
+  const { logout,user } = useAuth();
+  console.log({user})
   return (
     <header className="bg-slate-900 shadow-2xl sticky top-0 z-50">
-      <div className="flex items-center justify-between px-6 py-5">
+      <div className="flex items-center justify-between px-6 py-5 ">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-linear-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">₿</span>
           </div>
           <h1 className="text-xl font-bold bg-linear-to-b from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-            Fuel Depo Corner Mart
+            {user?.businessName}
           </h1>
+        </div>
+        <div className='flex justify-center items-center gap-1.5'>
+          <div className='text-amber-100'>Hello, {user?.email}</div>
+          <Link
+          onClick={logout}
+            href="/login"
+            className="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition"
+          >
+            Logout
+          </Link>
         </div>
       </div>
 

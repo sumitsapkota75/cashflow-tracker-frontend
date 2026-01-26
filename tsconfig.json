@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/machines/open", "app/machines/day-close"  ],
+, "app/(app)/machines/open", "app/(app)/machines/day-close"  ],
   "exclude": ["node_modules"]
 }
