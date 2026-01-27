@@ -7,6 +7,7 @@ export interface BusinessData {
   name: string;
   location: string;
   numberOfMachines: number;
+  machineIds?: string[];
 }
 
 export type BusinessUpsert = Omit<BusinessData, "id" | "_id">;

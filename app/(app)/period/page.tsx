@@ -218,8 +218,6 @@ export default function PeriodPage() {
                 businessDate: formatDate(selectedDate),
                 totalCashInOpen: Number(cashIn),
                 totalCashOutOpen: Number(cashOut),
-                cashInAtmOpen: Number(cashInAtm),
-                safeDropOpen: Number(safeDrop),
               });
             }}
           >
@@ -271,36 +269,38 @@ export default function PeriodPage() {
                 required
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                {activePeriod?.status === "OPEN"
-                  ? "Cash In ATM (Close)"
-                  : "Cash In ATM (Open)"}
-              </label>
-              <input
-                type="number"
-                min={0}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                placeholder="0"
-                value={cashInAtm}
-                onChange={(event) => setCashInAtm(event.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                Safe Drop
-              </label>
-              <input
-                type="number"
-                min={0}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                placeholder="0"
-                value={safeDrop}
-                onChange={(event) => setSafeDrop(event.target.value)}
-                required
-              />
-            </div>
+            {activePeriod?.status === "OPEN" && (
+              <>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Cash In ATM (Close)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={cashInAtm}
+                    onChange={(event) => setCashInAtm(event.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Safe Drop (Close)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={safeDrop}
+                    onChange={(event) => setSafeDrop(event.target.value)}
+                    required
+                  />
+                </div>
+              </>
+            )}
             <div className="md:col-span-3">
               <button
                 className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
@@ -309,8 +309,9 @@ export default function PeriodPage() {
                   openPeriodMutation.isPending ||
                   closePeriodMutation.isPending ||
                   !businessId ||
-                  (!selectedDate && activePeriod?.status !== "OPEN") ||
-                  selectedPeriod?.status === "CLOSED"
+                  (activePeriod?.status !== "OPEN" && !selectedDate) ||
+                  (activePeriod?.status !== "OPEN" &&
+                    selectedPeriod?.status === "CLOSED")
                 }
               >
                 {activePeriod?.status === "OPEN"

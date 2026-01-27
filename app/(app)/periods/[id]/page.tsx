@@ -1,12 +1,12 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { AuthGuard } from "@/app/context/authGuard";
 import { periodService } from "@/app/services/periodService";
 import {
   machineEntryService,
-  MachineEntryData,
 } from "@/app/services/machineEntryService";
 
 function formatCurrency(value?: number | null) {
@@ -154,9 +154,17 @@ export default function PeriodDetailPage() {
             <h2 className="text-lg font-semibold text-slate-900">
               Machine Entries
             </h2>
-            <span className="text-xs text-slate-400">
-              {machineEntries.length} entries
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400">
+                {machineEntries.length} entries
+              </span>
+              <Link
+                href="/machines/open"
+                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                New Entry
+              </Link>
+            </div>
           </div>
 
           {entriesLoading ? (
@@ -170,30 +178,49 @@ export default function PeriodDetailPage() {
           ) : (
             <>
               <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-100 md:block">
-                <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <span>Machine</span>
-                  <span>Cash In</span>
-                  <span>Cash Out</span>
-                  <span>Net</span>
+                  <span>Report CashIn</span>
+                  <span>Report CashOut</span>
+                  <span>Physical Cash Collected</span>
+                  <span>Safe Drop</span>
+                  <span>Difference</span>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {machineEntries.map((entry) => (
                     <div
-                      key={entry.id ?? entry._id ?? entry.machineId ?? Math.random()}
-                      className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
+                      key={
+                        entry.entryId ??
+                        entry.id ??
+                        entry._id ??
+                        entry.machineId ??
+                        Math.random()
+                      }
+                      className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
                     >
                       <div>
                         <p className="font-medium text-slate-800">
                           {entry.machineName ?? entry.machineId ?? "Machine"}
                         </p>
                         <p className="text-xs text-slate-400">
-                          {formatDateTime(entry.createdAt)}
+                          {formatDateTime(entry.openedAt)}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {entry.reason ?? "—"}
                         </p>
                       </div>
-                      <span>{formatCurrency(entry.cashIn ?? null)}</span>
-                      <span>{formatCurrency(entry.cashOut ?? null)}</span>
-                      <span className="font-medium text-slate-800">
-                        {formatCurrency(entry.net ?? null)}
+                      <span>{formatCurrency(entry.reportCashIn ?? null)}</span>
+                      <span>{formatCurrency(entry.reportCashOut ?? null)}</span>
+                      <span>{formatCurrency(entry.physicalCash ?? null)}</span>
+                      <span>{formatCurrency(entry.safeDroppedAmount ?? null)}</span>
+                      <span
+                        className={`font-medium ${
+                          (entry.difference ?? 0) < 0
+                            ? "text-rose-600"
+                            : "text-emerald-600"
+                        }`}
+                      >
+                        {formatCurrency(entry.difference ?? null)}
                       </span>
                     </div>
                   ))}
@@ -203,7 +230,13 @@ export default function PeriodDetailPage() {
               <div className="mt-4 space-y-3 md:hidden">
                 {machineEntries.map((entry) => (
                   <div
-                    key={entry.id ?? entry._id ?? entry.machineId ?? Math.random()}
+                    key={
+                      entry.entryId ??
+                      entry.id ??
+                      entry._id ??
+                      entry.machineId ??
+                      Math.random()
+                    }
                     className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -212,26 +245,53 @@ export default function PeriodDetailPage() {
                           {entry.machineName ?? entry.machineId ?? "Machine"}
                         </p>
                         <p className="text-xs text-slate-400">
-                          {formatDateTime(entry.createdAt)}
+                          {formatDateTime(entry.openedAt)}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {entry.reason ?? "—"}
                         </p>
                       </div>
-                      <span className="rounded-full bg-white px-2 py-1 text-xs text-slate-500">
-                        Net {formatCurrency(entry.net ?? null)}
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs ${
+                          (entry.difference ?? 0) < 0
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        Diff {formatCurrency(entry.difference ?? null)}
                       </span>
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
                       <div>
-                        Cash In
+                        Report Cash In
                         <div className="text-sm font-semibold text-slate-800">
-                          {formatCurrency(entry.cashIn ?? null)}
+                          {formatCurrency(entry.reportCashIn ?? null)}
                         </div>
                       </div>
                       <div>
-                        Cash Out
+                        Report Cash Out
                         <div className="text-sm font-semibold text-slate-800">
-                          {formatCurrency(entry.cashOut ?? null)}
+                          {formatCurrency(entry.reportCashOut ?? null)}
                         </div>
                       </div>
+                      <div>
+                        Physical Cash Collected
+                        <div className="text-sm font-semibold text-slate-800">
+                          {formatCurrency(entry.physicalCash ?? null)}
+                        </div>
+                      </div>
+                      <div>
+                        Safe Drop
+                        <div className="text-sm font-semibold text-slate-800">
+                          {formatCurrency(entry.safeDroppedAmount ?? null)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-slate-500">
+                      Net From Report{" "}
+                      <span className="font-semibold text-slate-700">
+                        {formatCurrency(entry.netFromReport ?? null)}
+                      </span>
                     </div>
                   </div>
                 ))}

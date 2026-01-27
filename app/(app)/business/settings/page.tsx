@@ -102,7 +102,7 @@ export default function BusinessSettingsPage() {
   );
 
   return (
-    <AuthGuard allowedRoles={["OWNER"]}>
+    <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-8">
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
