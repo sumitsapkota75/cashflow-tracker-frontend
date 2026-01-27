@@ -8,7 +8,6 @@ export default function Header() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  console.log({user})
 
   // Role-based tabs
   const tabs = (() => {

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import NumberInput from "@/app/(app)/components/NumberInput";
-import ImageUpload, { ImageFile } from "@/app/(app)/components/ImageUpload";
+import NumberInput from "@/app/components/NumberInput";
+import ImageUpload, { ImageFile } from "@/app/components/ImageUpload";
 
 type PayoutEntry = {
   id: string;

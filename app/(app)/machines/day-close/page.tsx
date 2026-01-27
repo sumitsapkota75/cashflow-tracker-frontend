@@ -1,6 +1,6 @@
 "use client";
 
-import NumberInput from "@/app/(app)/components/NumberInput";
+import NumberInput from "@/app/components/NumberInput";
 
 export default function DayClose() {
   return (

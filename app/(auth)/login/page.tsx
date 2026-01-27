@@ -2,53 +2,56 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/app/context/AuthContext";
+import { authService } from "@/app/services/loginService";
 
 export default function LoginPage() {
-  const { login } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // -----------------------
+  // LOGIN MUTATION
+  // -----------------------
+  const loginMutation = useMutation({
+    mutationFn: () => authService.login(email, password),
+
+    onSuccess: async (token: string) => {
+      await login(token);
+      queryClient.clear();
+      router.push("/");
+    },
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      console.error("Login failed:", err);
+
+      // Axios-style error handling
+      const status = err?.response?.status;
+      const message = err?.response?.data?.message;
+
+      if (status === 401) {
+        setError("Invalid email or password.");
+      } else if (message) {
+        setError(message);
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    },
+  });
+
+  // -----------------------
+  // SUBMIT
+  // -----------------------
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setLoading(true);
-
-    try {
-      const res = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-
-        // Better error messaging
-        if (res.status === 401) {
-          setError("Invalid email or password.");
-        } else if (body?.message) {
-          setError(body.message);
-        } else {
-          setError("Login failed. Please try again.");
-        }
-
-        return;
-      }
-
-      const data = await res.json();
-      await login(data.token);
-      setLoading(false)
-      router.push("/"); // dashboard
-    } catch (err) {
-      setError("Server unreachable. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    loginMutation.mutate();
   }
 
   return (
@@ -117,7 +120,7 @@ export default function LoginPage() {
           {/* Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loginMutation.isPending}
             className="
               w-full flex items-center justify-center
               bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400
@@ -126,7 +129,7 @@ export default function LoginPage() {
               transition shadow-lg hover:shadow-xl
             "
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loginMutation.isPending ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
