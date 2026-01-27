@@ -39,7 +39,7 @@ export default function PayoutsPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-6 text-white">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">
             Payouts
           </p>
@@ -58,7 +58,7 @@ export default function PayoutsPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-slate-900">
             Create Payout
           </h2>
@@ -169,7 +169,7 @@ export default function PayoutsPage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">

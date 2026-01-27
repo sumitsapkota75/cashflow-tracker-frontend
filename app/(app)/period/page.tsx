@@ -143,7 +143,7 @@ export default function PeriodPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-slate-900">
             Period control
           </h2>
@@ -326,7 +326,7 @@ export default function PeriodPage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -404,7 +404,7 @@ export default function PeriodPage() {
                       return (
                         <div
                           key={`empty-${index}-${dayIndex}`}
-                          className="h-24 bg-white"
+                          className="h-20 bg-white sm:h-24"
                         />
                       );
                     }
@@ -456,7 +456,7 @@ export default function PeriodPage() {
                           setSelectedDate(date);
                           setMessage("");
                         }}
-                        className={`relative h-24 bg-white p-2 text-left text-sm transition hover:bg-slate-50 ${
+                        className={`relative h-20 bg-white p-2 text-left text-sm transition hover:bg-slate-50 sm:h-24 ${
                           isSelected ? "ring-2 ring-emerald-400" : ""
                         }`}
                       >

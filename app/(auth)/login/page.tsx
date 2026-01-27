@@ -55,12 +55,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-6">
+      <div className="w-full max-w-md bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
 
         {/* Header */}
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900">
             Machine Tracker
           </h1>
           <p className="text-sm text-slate-500">

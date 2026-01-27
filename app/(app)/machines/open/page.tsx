@@ -107,7 +107,7 @@ export default function MachineEntryPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -147,7 +147,7 @@ export default function MachineEntryPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           {!hasOpenPeriod ? (
             <div className="space-y-3 text-center">
               <p className="text-base font-semibold text-slate-700">
@@ -347,7 +347,7 @@ export default function MachineEntryPage() {
         {hasOpenPeriod && (
           <section
             ref={entriesRef}
-            className="rounded-2xl border border-slate-200 bg-white p-6"
+            className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>

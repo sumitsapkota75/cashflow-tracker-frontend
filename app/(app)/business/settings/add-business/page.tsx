@@ -56,7 +56,7 @@ export default function AddBusinessPage() {
         )}
 
         <form
-          className="space-y-4 rounded-lg border border-slate-200 bg-white p-6"
+          className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 sm:p-6"
           onSubmit={(event) => {
             event.preventDefault();
             setError("");

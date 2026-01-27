@@ -5,7 +5,7 @@ export default function Dashboard() {
   return (
     <AuthGuard>
       <div className="space-y-6">
-        <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-6 text-white md:flex-row md:items-center md:justify-between">
+        <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">
               Cash Flow Command
@@ -85,7 +85,7 @@ export default function Dashboard() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">
@@ -126,7 +126,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Location Pulse
             </h2>
@@ -166,7 +166,7 @@ export default function Dashboard() {
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2">
             <h2 className="text-lg font-semibold text-slate-900">
               Upcoming Safe Drops
             </h2>
@@ -207,7 +207,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Notes for Shift
             </h2>

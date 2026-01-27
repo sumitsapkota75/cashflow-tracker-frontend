@@ -26,13 +26,13 @@ export default function PeriodDetailPage() {
 
   const { data: period, isLoading: periodLoading } = useQuery({
     queryKey: ["period", periodId],
-    queryFn: () => periodService.getPeriodById(periodId),
+    queryFn: () => periodService.getPeriodById(periodId as string),
     enabled: Boolean(periodId),
   });
 
   const { data: machineEntries = [], isLoading: entriesLoading } = useQuery({
     queryKey: ["machine-entries", periodId],
-    queryFn: () => machineEntryService.getByPeriod(periodId),
+    queryFn: () => machineEntryService.getByPeriod(periodId as string),
     enabled: Boolean(periodId),
   });
 
@@ -49,7 +49,7 @@ export default function PeriodDetailPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -149,7 +149,7 @@ export default function PeriodDetailPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">
               Machine Entries
@@ -187,14 +187,14 @@ export default function PeriodDetailPage() {
                   <span>Difference</span>
                 </div>
                 <div className="divide-y divide-slate-100">
-                  {machineEntries.map((entry) => (
+                  {machineEntries.map((entry, index) => (
                     <div
                       key={
                         entry.entryId ??
                         entry.id ??
                         entry._id ??
                         entry.machineId ??
-                        Math.random()
+                        index
                       }
                       className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
                     >
@@ -228,14 +228,14 @@ export default function PeriodDetailPage() {
               </div>
 
               <div className="mt-4 space-y-3 md:hidden">
-                {machineEntries.map((entry) => (
+                {machineEntries.map((entry, index) => (
                   <div
                     key={
                       entry.entryId ??
                       entry.id ??
                       entry._id ??
                       entry.machineId ??
-                      Math.random()
+                      index
                     }
                     className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
                   >

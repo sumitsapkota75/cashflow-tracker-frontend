@@ -77,7 +77,7 @@ export default function ReportsPage() {
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-6 text-white">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">
@@ -97,7 +97,7 @@ export default function ReportsPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
@@ -193,7 +193,7 @@ export default function ReportsPage() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">
@@ -228,7 +228,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Machine Highlights
             </h2>
@@ -263,7 +263,7 @@ export default function ReportsPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
