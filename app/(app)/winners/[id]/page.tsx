@@ -23,10 +23,9 @@ export default function WinnerDetailPage() {
 
   const { data: winner, isLoading } = useQuery({
     queryKey: ["winner", winnerId],
-    queryFn: () => winnerService.getWinnerById(winnerId),
+    queryFn: () => winnerService.getWinnerById(winnerId as string),
     enabled: Boolean(winnerId),
   });
-
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
