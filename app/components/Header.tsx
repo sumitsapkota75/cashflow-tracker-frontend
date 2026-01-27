@@ -15,6 +15,7 @@ export default function Header() {
       case "OWNER":
         return [
           { name: "Dashboard", href: "/" },
+          { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
           { name: "Reports", href: "/machines/reports" },
           { name: "Day Close", href: "/machines/day-close" },
@@ -23,6 +24,7 @@ export default function Header() {
       case "MANAGER":
         return [
           { name: "Dashboard", href: "/" },
+          { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
           { name: "Reports", href: "/machines/reports" },
           { name: "Day Close", href: "/machines/day-close" },
@@ -30,11 +32,15 @@ export default function Header() {
       case "EMPLOYEE":
         return [
           { name: "Dashboard", href: "/" },
+          { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
           { name: "Reports", href: "/machines/reports" },
         ];
       default:
-        return [{ name: "Dashboard", href: "/" }];
+        return [
+          { name: "Dashboard", href: "/" },
+          { name: "Period", href: "/period" },
+        ];
     }
   })();
 

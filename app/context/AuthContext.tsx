@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: decoded.email || decoded.sub,
       role: decoded.role,
       businessName: decoded.businessName,
+      businessId: decoded.businessId,
     };
     console.log({user})
     setState({ user, token, loading: false });
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: decoded.email,
       role: decoded.role,
       businessName: decoded.businessName,
+      businessId: decoded.businessId,
     };
 
     localStorage.setItem("auth_token", token);

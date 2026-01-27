@@ -9,9 +9,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const { loading } = useAuth();
   if (loading) return <LayoutSkeleton />;
   return (
-    <div className="flex">
+    <div className="flex flex-col">
+      <div>
       <Header />
-      <main className="flex-1 p-4 md:p-6">{children}</main>
+      </div>
+      <div className="flex-1 p-4 md:p-6">{children}</div>
     </div>
   );
 }
