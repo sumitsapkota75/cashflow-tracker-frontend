@@ -209,6 +209,90 @@ export default function WinnersPage() {
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard", href: "/" }, { label: "Winners" }]} />
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
+                Upcoming Plans
+              </p>
+              <h2 className="text-lg font-semibold text-emerald-900">
+                Upcoming winner payout schedule
+              </h2>
+              <p className="text-sm text-emerald-700">
+                Keep payouts on time with the next scheduled plans.
+              </p>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
+              {upcomingPlans.length} planned
+            </span>
+          </div>
+
+          {upcomingPlans.length === 0 ? (
+            <div className="mt-4 text-sm text-emerald-700">
+              No upcoming payout plans scheduled.
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {upcomingPlans.map((plan) => (
+                (() => {
+                  const date = new Date(plan.date);
+                  const today = new Date();
+                  date.setHours(0, 0, 0, 0);
+                  today.setHours(0, 0, 0, 0);
+                  const diffMs = date.getTime() - today.getTime();
+                  const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
+                  const isUrgent = daysLeft <= 3;
+                  return (
+                <div
+                  key={plan.id}
+                  className={`rounded-xl border px-4 py-3 ${
+                    isUrgent
+                      ? "border-rose-200 bg-rose-50"
+                      : "border-emerald-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p
+                        className={`text-sm font-semibold ${
+                          isUrgent ? "text-rose-900" : "text-emerald-900"
+                        }`}
+                      >
+                        {plan.playerName}
+                      </p>
+                      <p
+                        className={`text-xs ${
+                          isUrgent ? "text-rose-700" : "text-emerald-700"
+                        }`}
+                      >
+                        {plan.date}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        isUrgent
+                          ? "bg-rose-100 text-rose-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                    >
+                      {formatMoney(Number(plan.amount) || 0)}
+                    </span>
+                  </div>
+                  <div
+                    className={`mt-2 flex items-center justify-between text-xs ${
+                      isUrgent ? "text-rose-700" : "text-emerald-700"
+                    }`}
+                  >
+                    <span>Status: {plan.status}</span>
+                    <span>{daysLeft} days left</span>
+                  </div>
+                </div>
+                  );
+                })()
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-200">Winners</p>
@@ -359,23 +443,6 @@ export default function WinnersPage() {
                   ))}
                 </div>
 
-                {upcomingPlans.length > 0 && (
-                  <div className="mt-4 rounded-xl border border-slate-100 bg-white p-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-slate-800">Upcoming scheduled payouts</p>
-                      <p className="text-xs text-slate-500">{upcomingPlans.length} items</p>
-                    </div>
-                    <div className="mt-3 space-y-2 text-sm text-slate-600">
-                      {upcomingPlans.slice(0, 5).map((p) => (
-                        <div key={p.id} className="flex items-center justify-between">
-                          <span className="font-medium text-slate-800">{p.playerName}</span>
-                          <span className="text-slate-500">{p.date}</span>
-                          <span className="font-semibold">{formatMoney(Number(p.amount) || 0)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="md:col-span-2">
