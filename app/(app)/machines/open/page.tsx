@@ -11,6 +11,7 @@ import {
   MachineEntryPayload,
 } from "@/app/services/machineEntryService";
 import ImageUpload, { ImageFile } from "@/app/components/ImageUpload";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 const reasons: MachineEntryPayload["reason"][] = [
   "MID_DAY",
@@ -107,6 +108,12 @@ export default function MachineEntryPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Machine Entry" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>

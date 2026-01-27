@@ -8,6 +8,7 @@ import { AuthGuard } from "@/app/context/authGuard";
 import { businessService } from "@/app/services/businessService";
 import { userService, UserCreateData } from "@/app/services/userService";
 import { UserRole } from "@/app/lib/auth";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 const roleOptions: UserRole[] = ["OWNER", "MANAGER", "EMPLOYEE"];
 
@@ -39,6 +40,13 @@ export default function AddUserPage() {
   return (
     <AuthGuard allowedRoles={["OWNER"]}>
       <div className="mx-auto max-w-2xl space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Business Settings", href: "/business/settings" },
+            { label: "Add User" },
+          ]}
+        />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">Add User</h1>

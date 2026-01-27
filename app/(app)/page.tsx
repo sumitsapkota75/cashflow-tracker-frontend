@@ -1,10 +1,12 @@
 import { AuthGuard } from "../context/authGuard";
 import Link from "next/link";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 export default function Dashboard() {
   return (
     <AuthGuard>
       <div className="space-y-6">
+        <Breadcrumbs items={[{ label: "Dashboard" }]} />
         <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">

@@ -9,6 +9,7 @@ import {
   periodService,
   PeriodData,
 } from "@/app/services/periodService";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -143,6 +144,12 @@ export default function PeriodPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Period" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-slate-900">
             Period control

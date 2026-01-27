@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { AuthGuard } from "@/app/context/authGuard";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 type SummaryCard = {
   label: string;
@@ -77,6 +78,12 @@ export default function ReportsPage() {
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Reports" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>

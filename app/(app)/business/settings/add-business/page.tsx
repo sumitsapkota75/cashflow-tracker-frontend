@@ -9,6 +9,7 @@ import {
   businessService,
   BusinessUpsert,
 } from "@/app/services/businessService";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export default function AddBusinessPage() {
   const router = useRouter();
@@ -32,6 +33,13 @@ export default function AddBusinessPage() {
   return (
     <AuthGuard allowedRoles={["OWNER"]}>
       <div className="mx-auto max-w-2xl space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Business Settings", href: "/business/settings" },
+            { label: "Add Business" },
+          ]}
+        />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">

@@ -20,6 +20,7 @@ import {
   UserUpdateData,
 } from "@/app/services/userService";
 import { UserRole } from "@/app/lib/auth";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 function getBusinessId(business: BusinessData) {
   return business.id ?? business._id ?? "";
@@ -104,6 +105,12 @@ export default function BusinessSettingsPage() {
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-8">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Business Settings" },
+          ]}
+        />
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>

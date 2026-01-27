@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AuthGuard } from "@/app/context/authGuard";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 type PayoutRow = {
   id: string;
@@ -39,6 +40,12 @@ export default function PayoutsPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Payouts" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">
             Payouts

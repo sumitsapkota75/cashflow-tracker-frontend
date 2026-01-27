@@ -1,7 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AuthGuard } from "@/app/context/authGuard";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  WinnerCreatePayload,
+  WinnerData,
+  winnerService,
+} from "@/app/services/winnerService";
+import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 type PlanItem = {
   id: string;
@@ -17,36 +25,98 @@ type WinnerRow = {
   remainingAmount: string;
   status: string;
   createdAt: string;
+  createdByUsername: string;
 };
 
 export default function WinnersPage() {
+  const queryClient = useQueryClient();
   const [planItems, setPlanItems] = useState<PlanItem[]>([
     { id: "plan-1", date: "2026-01-30", amount: "2500" },
   ]);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const winners = useMemo<WinnerRow[]>(
-    () => [
-      {
-        id: "winner-1",
-        playerName: "Alex Morgan",
-        totalWinAmount: "$12,500",
-        amountPaid: "$4,000",
-        remainingAmount: "$8,500",
-        status: "ACTIVE",
-        createdAt: "2026-01-26 9:20 AM",
-      },
-      {
-        id: "winner-2",
-        playerName: "J. Patel",
-        totalWinAmount: "$6,800",
-        amountPaid: "$6,800",
-        remainingAmount: "$0",
-        status: "PAID",
-        createdAt: "2026-01-20 1:05 PM",
-      },
-    ],
-    []
+  const [playerName, setPlayerName] = useState("");
+  const [playerContact, setPlayerContact] = useState("");
+  const [winningDate, setWinningDate] = useState("");
+  const [totalWinAmount, setTotalWinAmount] = useState("");
+  const [amountPaid, setAmountPaid] = useState("");
+  const [status, setStatus] = useState("PARTIALLY_PAID");
+
+  const createWinnerMutation = useMutation({
+    mutationFn: winnerService.createWinner,
+    onSuccess: () => {
+      setMessage("Winner saved successfully.");
+      setError("");
+      setPlayerName("");
+      setPlayerContact("");
+      setWinningDate("");
+      setTotalWinAmount("");
+      setAmountPaid("");
+      setStatus("PARTIALLY_PAID");
+      queryClient.invalidateQueries({ queryKey: ["winners"] });
+    },
+    onError: () => {
+      setError("Unable to save winner. Try again.");
+      setMessage("");
+    },
+  });
+
+  const { data: winners = [] } = useQuery({
+    queryKey: ["winners"],
+    queryFn: winnerService.getWinners,
+  });
+
+  useEffect(() => {
+    const hasDefaultPlan =
+      planItems.length === 1 &&
+      planItems[0].id === "plan-1" &&
+      !planItems[0].date &&
+      !planItems[0].amount;
+    if (!hasDefaultPlan) return;
+
+    const winnerWithPlan = winners.find(
+      (winner) => winner.paymentPlan && winner.paymentPlan.length > 0
+    );
+    if (!winnerWithPlan?.paymentPlan) return;
+
+    const mapped = winnerWithPlan.paymentPlan.map((item, index) => ({
+      id: `${winnerWithPlan.id}-plan-${index}`,
+      date: item.date,
+      amount: String(item.amount),
+    }));
+    setPlanItems(mapped);
+  }, [winners, planItems]);
+
+  const upcomingPlans = useMemo(() => {
+    const today = new Date();
+    return winners.flatMap((winner) => {
+      const plan = winner.paymentPlan ?? [];
+      return plan
+        .filter((item) => new Date(item.date) >= today)
+        .map((item) => ({
+          id: `${winner.id}-${item.date}-${item.amount}`,
+          playerName: winner.playerName,
+          date: item.date,
+          amount: item.amount,
+          status: item.status ?? "SCHEDULED",
+        }));
+    });
+  }, [winners]);
+
+  const winnerRows = useMemo<WinnerRow[]>(
+    () =>
+      winners.map((winner: WinnerData) => ({
+        id: winner.id,
+        playerName: winner.playerName,
+        totalWinAmount: `$${winner.totalWinAmount.toLocaleString()}`,
+        amountPaid: `$${winner.amountPaid.toLocaleString()}`,
+        remainingAmount: `$${(winner.remainingAmount ?? 0).toLocaleString()}`,
+        status: winner.status,
+        createdAt: winner.createdAt ?? "-",
+        createdByUsername: winner.createdByUsername ?? "-",
+      })),
+    [winners]
   );
 
   const totalPlanned = planItems.reduce(
@@ -57,6 +127,12 @@ export default function WinnersPage() {
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Winners" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-200">
             Winners
@@ -89,11 +165,32 @@ export default function WinnersPage() {
                 {message}
               </div>
             )}
+            {error && (
+              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+                {error}
+              </div>
+            )}
             <form
               className="mt-6 grid gap-4 md:grid-cols-2"
               onSubmit={(event) => {
                 event.preventDefault();
-                setMessage("Winner saved. Payment plan queued.");
+                const paymentPlan = planItems
+                  .filter((item) => item.date && item.amount)
+                  .map((item) => ({
+                    date: item.date,
+                    amount: Number(item.amount),
+                    status: "SCHEDULED",
+                  }));
+                const payload: WinnerCreatePayload = {
+                  playerName,
+                  playerContact,
+                  winningDate: winningDate || undefined,
+                  totalWinAmount: Number(totalWinAmount),
+                  amountPaid: Number(amountPaid || 0),
+                  status,
+                  paymentPlan: paymentPlan.length > 0 ? paymentPlan : null,
+                };
+                createWinnerMutation.mutate(payload);
               }}
             >
               <div>
@@ -103,6 +200,8 @@ export default function WinnersPage() {
                 <input
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   placeholder="Full name"
+                  value={playerName}
+                  onChange={(event) => setPlayerName(event.target.value)}
                   required
                 />
               </div>
@@ -110,9 +209,14 @@ export default function WinnersPage() {
                 <label className="text-sm font-semibold text-slate-700">
                   Status
                 </label>
-                <select className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base">
-                  <option>ACTIVE</option>
+                <select
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value)}
+                >
+                  <option>PARTIALLY_PAID</option>
                   <option>PAID</option>
+                  <option>UNPAID</option>
                   <option>ON_HOLD</option>
                 </select>
               </div>
@@ -125,6 +229,8 @@ export default function WinnersPage() {
                   min={0}
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   placeholder="12500"
+                  value={totalWinAmount}
+                  onChange={(event) => setTotalWinAmount(event.target.value)}
                   required
                 />
               </div>
@@ -137,6 +243,30 @@ export default function WinnersPage() {
                   min={0}
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   placeholder="4000"
+                  value={amountPaid}
+                  onChange={(event) => setAmountPaid(event.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Player Contact
+                </label>
+                <input
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
+                  placeholder="+1-972-555-1234"
+                  value={playerContact}
+                  onChange={(event) => setPlayerContact(event.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-700">
+                  Winning Date
+                </label>
+                <input
+                  type="datetime-local"
+                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
+                  value={winningDate}
+                  onChange={(event) => setWinningDate(event.target.value)}
                 />
               </div>
 
@@ -217,9 +347,10 @@ export default function WinnersPage() {
               <div className="md:col-span-2">
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  disabled={createWinnerMutation.isPending}
                 >
-                  Save Winner
+                  {createWinnerMutation.isPending ? "Saving..." : "Save Winner"}
                 </button>
               </div>
             </form>
@@ -253,13 +384,35 @@ export default function WinnersPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-slate-700">
-                Follow-up Reminders
+                Upcoming Payment Plans
               </h3>
-              <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                <li>Confirm payout method and ID verification.</li>
-                <li>Log partial payouts in the Payouts page.</li>
-                <li>Close winner once remaining amount is zero.</li>
-              </ul>
+              {upcomingPlans.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500">
+                  No scheduled payments found.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-2 text-sm text-slate-600">
+                  {upcomingPlans.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2"
+                    >
+                      <div>
+                        <p className="font-semibold text-slate-800">
+                          {item.playerName}
+                        </p>
+                        <p className="text-xs text-slate-500">{item.date}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-800">
+                          ${item.amount.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-slate-500">{item.status}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -282,23 +435,27 @@ export default function WinnersPage() {
             </button>
           </div>
           <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-100 md:block">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <span>Player</span>
               <span>Total Win</span>
               <span>Paid</span>
               <span>Remaining</span>
               <span>Status</span>
               <span>Created</span>
+              <span>Added By</span>
             </div>
             <div className="divide-y divide-slate-100">
-              {winners.map((winner) => (
+              {winnerRows.map((winner) => (
                 <div
                   key={winner.id}
-                  className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
+                  className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
                 >
-                  <span className="font-semibold text-slate-800">
+                  <Link
+                    className="font-semibold text-slate-800 hover:text-slate-900"
+                    href={`/winners/${winner.id}`}
+                  >
                     {winner.playerName}
-                  </span>
+                  </Link>
                   <span>{winner.totalWinAmount}</span>
                   <span>{winner.amountPaid}</span>
                   <span className="font-semibold text-slate-800">
@@ -313,25 +470,29 @@ export default function WinnersPage() {
                   >
                     {winner.status}
                   </span>
-                  <span>{winner.createdAt}</span>
+                  <span>{new Date(winner.createdAt).toLocaleString("en-US")}</span>
+                  <span>{winner.createdByUsername}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="mt-4 space-y-3 md:hidden">
-            {winners.map((winner) => (
+            {winnerRows.map((winner) => (
               <div
                 key={winner.id}
                 className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-semibold text-slate-800">
+                    <Link
+                      className="font-semibold text-slate-800 hover:text-slate-900"
+                      href={`/winners/${winner.id}`}
+                    >
                       {winner.playerName}
-                    </p>
+                    </Link>
                     <p className="text-xs text-slate-500">
-                      {winner.createdAt}
+                      {winner.createdAt} · {winner.createdByUsername}
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2 py-1 text-xs text-slate-600">

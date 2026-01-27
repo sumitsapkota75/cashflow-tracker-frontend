@@ -8,6 +8,7 @@ import { periodService } from "@/app/services/periodService";
 import {
   machineEntryService,
 } from "@/app/services/machineEntryService";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 function formatCurrency(value?: number | null) {
   if (value == null) return "-";
@@ -49,6 +50,13 @@ export default function PeriodDetailPage() {
   return (
     <AuthGuard>
       <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { label: "Dashboard", href: "/" },
+            { label: "Period", href: "/period" },
+            { label: "Period Details" },
+          ]}
+        />
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
