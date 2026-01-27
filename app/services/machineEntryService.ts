@@ -15,6 +15,7 @@ export interface MachineEntryData {
   reason?: string;
   difference?: number;
   openedAt?: string;
+  username?: string;
 }
 
 export interface MachineEntryPayload {

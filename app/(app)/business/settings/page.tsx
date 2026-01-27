@@ -45,7 +45,7 @@ export default function BusinessSettingsPage() {
   });
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [userDraft, setUserDraft] = useState<UserUpdateData>({
-    email: "",
+    username: "",
     role: "MANAGER",
     businessId: "",
   });
@@ -428,7 +428,7 @@ export default function BusinessSettingsPage() {
           {!usersLoading && !usersError && (
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               <div className="grid grid-cols-1 gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600 md:grid-cols-[2fr_1fr_2fr_140px]">
-                <span>Email</span>
+                <span>Username</span>
                 <span>Role</span>
                 <span>Business</span>
                 <span className="text-right">Actions</span>
@@ -447,7 +447,7 @@ export default function BusinessSettingsPage() {
                     user?.businessId ??
                     "Unassigned";
                   return (
-                    <div key={id || user.email}>
+                    <div key={id || user.username}>
                       <div className="space-y-3 px-4 py-4 text-sm md:hidden">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -457,17 +457,17 @@ export default function BusinessSettingsPage() {
                             {isEditing ? (
                               <input
                                 className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                                value={userDraft?.email ?? ""}
+                                value={userDraft?.username ?? ""}
                                 onChange={(event) =>
                                   setUserDraft((prev) => ({
                                     ...prev,
-                                    email: event.target.value,
+                                    username: event.target.value,
                                   }))
                                 }
                               />
                             ) : (
                               <p className="text-base font-semibold text-slate-900">
-                                {user?.email}
+                                {user?.username}
                               </p>
                             )}
                           </div>
@@ -553,7 +553,7 @@ export default function BusinessSettingsPage() {
                                   "";
                                 setEditingUserId(id);
                                 setUserDraft({
-                                  email: user.email,
+                                  username: user.username,
                                   role: user.role,
                                   businessId,
                                 });
@@ -570,17 +570,17 @@ export default function BusinessSettingsPage() {
                           {isEditing ? (
                             <input
                               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                              value={userDraft?.email ?? ""}
+                              value={userDraft?.username ?? ""}
                               onChange={(event) =>
                                 setUserDraft((prev) => ({
                                   ...prev,
-                                  email: event.target.value,
+                                  username: event.target.value,
                                 }))
                               }
                             />
                           ) : (
                             <span className="font-medium text-slate-900">
-                              {user?.email}
+                              {user?.username}
                             </span>
                           )}
                         </div>
@@ -665,7 +665,7 @@ export default function BusinessSettingsPage() {
                                   "";
                                 setEditingUserId(id);
                                 setUserDraft({
-                                  email: user.email,
+                                  username: user.username,
                                   role: user.role,
                                   businessId,
                                 });

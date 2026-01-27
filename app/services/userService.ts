@@ -4,7 +4,7 @@ import { UserRole } from "../lib/auth";
 export interface UserData {
   id?: string;
   _id?: string;
-  email: string;
+  username: string;
   role: UserRole;
   businessId?: string;
   business?: {
@@ -15,14 +15,14 @@ export interface UserData {
 }
 
 export interface UserCreateData {
-  email: string;
+  username: string;
   password: string;
   role: UserRole;
   businessId: string;
 }
 
 export interface UserUpdateData {
-  email?: string;
+  username?: string;
   password?: string;
   role?: UserRole;
   businessId?: string;
@@ -45,6 +45,7 @@ function normalizeUserList(data: unknown) {
   return Array.isArray(data) ? data : [data];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeUserPage(data: any): UserPage {
   if (!data) {
     return {

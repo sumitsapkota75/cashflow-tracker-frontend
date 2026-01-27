@@ -22,7 +22,7 @@ function formatDateTime(value?: string | null) {
 
 export default function PeriodDetailPage() {
   const params = useParams();
-  const periodId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const periodId = Array?.isArray(params.id) ? params.id[0] : params.id;
 
   const { data: period, isLoading: periodLoading } = useQuery({
     queryKey: ["period", periodId],
@@ -200,7 +200,7 @@ export default function PeriodDetailPage() {
                     >
                       <div>
                         <p className="font-medium text-slate-800">
-                          {entry.machineName ?? entry.machineId ?? "Machine"}
+                          {entry.username || entry.machineId || "Machine"}
                         </p>
                         <p className="text-xs text-slate-400">
                           {formatDateTime(entry.openedAt)}

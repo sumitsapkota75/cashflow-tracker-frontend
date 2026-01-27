@@ -11,7 +11,7 @@ export default function LoginPage() {
   const queryClient = useQueryClient();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -19,7 +19,7 @@ export default function LoginPage() {
   // LOGIN MUTATION
   // -----------------------
   const loginMutation = useMutation({
-    mutationFn: () => authService.login(email, password),
+    mutationFn: () => authService.login(username, password),
 
     onSuccess: async (token: string) => {
       await login(token);
@@ -81,7 +81,7 @@ export default function LoginPage() {
           {/* Email */}
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">
-              Email
+              Username
             </label>
             <input
               className="
@@ -91,8 +91,8 @@ export default function LoginPage() {
                 transition
               "
               placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

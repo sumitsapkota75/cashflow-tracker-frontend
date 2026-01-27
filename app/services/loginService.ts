@@ -1,8 +1,8 @@
 import { api } from "./api";
 
 export const authService = {
-    login: async (email: string, password: string): Promise<string> => {
-        const res = await api.post("/auth/login", { email, password });
+    login: async (username: string, password: string): Promise<string> => {
+        const res = await api.post("/auth/login", { username, password });
         const data = res.data;
 
         if (typeof data === "string") return data;

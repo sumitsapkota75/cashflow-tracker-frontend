@@ -15,7 +15,7 @@ export default function AddUserPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<UserCreateData>({
-    email: "",
+    username: "",
     password: "",
     role: "MANAGER",
     businessId: "",
@@ -69,12 +69,12 @@ export default function AddUserPage() {
           }}
         >
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">Email</label>
+            <label className="text-sm font-medium text-slate-700">username</label>
             <input
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={form.email}
+              value={form.username}
               onChange={(event) =>
-                setForm((prev) => ({ ...prev, email: event.target.value }))
+                setForm((prev) => ({ ...prev, username: event.target.value }))
               }
               required
             />
