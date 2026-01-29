@@ -97,7 +97,7 @@ export const userService = {
     return res.data;
   },
   updateUser: async (id: string, data: UserUpdateData) => {
-    const res = await api.put(`/users/${id}`, data);
+    const res = await api.patch(`/users/${id}`, data);
     return res.data;
   },
   deleteUser: async (id: string) => {

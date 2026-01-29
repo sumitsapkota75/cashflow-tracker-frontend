@@ -1,21 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AuthGuard } from "@/app/context/authGuard";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  WinnerCreatePayload,
-  WinnerData,
-  winnerService,
-} from "@/app/services/winnerService";
+import { useQuery } from "@tanstack/react-query";
+import { WinnerData, winnerService } from "@/app/services/winnerService";
 import Link from "next/link";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
-
-type PlanItem = {
-  id: string;
-  date: string; // LocalDate: YYYY-MM-DD (backend uses LocalDate)
-  amount: string;
-};
 
 type WinnerRow = {
   id: string;
@@ -28,87 +18,35 @@ type WinnerRow = {
   createdByUsername: string;
 };
 
-type PaymentPlanPayloadItem = {
-  date: string; // LocalDate
-  amount: number; // BigDecimal-friendly
-  status: string;
-};
-
-const DEFAULT_STATUS = "PARTIALLY_PAID";
-
 const formatMoney = (value: number) => `$${value.toLocaleString("en-US")}`;
 
-const toNumber = (value: string) => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
+const formatDateTime = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
-const buildPaymentPlan = (items: PlanItem[]): PaymentPlanPayloadItem[] => {
-  return items
-    .map((i) => ({
-      date: (i.date ?? "").trim(),
-      amount: toNumber(i.amount),
-      status: "SCHEDULED",
-    }))
-    .filter((i) => i.date && i.amount > 0);
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
 };
-
-const newPlanItem = (): PlanItem => ({
-  id: `plan-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-  date: "",
-  amount: "",
-});
 
 export default function WinnersPage() {
-  const queryClient = useQueryClient();
-
-  // form state
-  const [playerName, setPlayerName] = useState("");
-  const [playerContact, setPlayerContact] = useState("");
-  const [winningDate, setWinningDate] = useState(""); // keep as-is from datetime-local
-  const [totalWinAmount, setTotalWinAmount] = useState("");
-  const [amountPaid, setAmountPaid] = useState("");
-  const [status, setStatus] = useState(DEFAULT_STATUS);
-
-  // payment plan state
-  const [planItems, setPlanItems] = useState<PlanItem[]>([newPlanItem()]);
-
-  // ui state
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
   const { data: winners = [] } = useQuery({
     queryKey: ["winners"],
     queryFn: winnerService.getWinners,
   });
-
-  const createWinnerMutation = useMutation({
-    mutationFn: winnerService.createWinner,
-    onSuccess: () => {
-      setMessage("Winner saved successfully.");
-      setError("");
-
-      setPlayerName("");
-      setPlayerContact("");
-      setWinningDate("");
-      setTotalWinAmount("");
-      setAmountPaid("");
-      setStatus(DEFAULT_STATUS);
-      setPlanItems([newPlanItem()]);
-
-      queryClient.invalidateQueries({ queryKey: ["winners"] });
-    },
-    onError: () => {
-      setError("Unable to save winner. Try again.");
-      setMessage("");
-    },
-  });
-
-  // derived
-  const totalPlanned = useMemo(
-    () => planItems.reduce((sum, item) => sum + toNumber(item.amount), 0),
-    [planItems]
-  );
 
   const upcomingPlans = useMemo(() => {
     const today = new Date();
@@ -118,7 +56,6 @@ export default function WinnersPage() {
       const plan = winner.paymentPlan ?? [];
       return plan
         .filter((item) => {
-          // item.date is LocalDate ("YYYY-MM-DD") - safe parse
           const d = new Date(item.date);
           d.setHours(0, 0, 0, 0);
           return d >= today;
@@ -133,6 +70,15 @@ export default function WinnersPage() {
     });
   }, [winners]);
 
+  const upcomingTotal = useMemo(
+    () =>
+      upcomingPlans.reduce(
+        (sum, plan) => sum + (Number(plan.amount) || 0),
+        0
+      ),
+    [upcomingPlans]
+  );
+
   const winnerRows = useMemo<WinnerRow[]>(
     () =>
       winners.map((winner: WinnerData) => ({
@@ -142,157 +88,16 @@ export default function WinnersPage() {
         amountPaid: formatMoney(winner.amountPaid),
         remainingAmount: formatMoney(winner.remainingAmount ?? 0),
         status: winner.status,
-        createdAt: winner.createdAt ?? "-",
+        createdAt: winner.createdAt ? formatDateTime(winner.createdAt) : "-",
         createdByUsername: winner.createdByUsername ?? "-",
       })),
     [winners]
   );
 
-  // handlers
-  const onAddPlanItem = () => setPlanItems((prev) => [...prev, newPlanItem()]);
-
-  const onRemovePlanItem = (id: string) =>
-    setPlanItems((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      return next.length ? next : [newPlanItem()];
-    });
-
-  const onUpdatePlanItem = (id: string, patch: Partial<PlanItem>) =>
-    setPlanItems((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-
-  const onSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    setMessage("");
-    setError("");
-
-    const paymentPlan = buildPaymentPlan(planItems);
-
-    const totalWin = toNumber(totalWinAmount);
-    const paid = toNumber(amountPaid);
-
-    if (!playerName.trim()) {
-      setError("Player name is required.");
-      return;
-    }
-
-    if (totalWin <= 0) {
-      setError("Total win amount must be greater than 0.");
-      return;
-    }
-
-    const plannedTotal = paymentPlan.reduce((s, p) => s + p.amount, 0);
-    if (plannedTotal > totalWin) {
-      setError("Payment plan total cannot exceed total win amount.");
-      return;
-    }
-
-    if (paid > totalWin) {
-      setError("Amount paid cannot exceed total win amount.");
-      return;
-    }
-
-    const payload: WinnerCreatePayload = {
-      playerName: playerName.trim(),
-      playerContact: playerContact.trim() || undefined,
-      winningDate: winningDate || undefined, // if backend expects LocalDateTime, keep datetime-local format
-      totalWinAmount: totalWin,
-      amountPaid: paid,
-      status,
-      paymentPlan, // ✅ LocalDate items
-    };
-    console.log({payload})
-    createWinnerMutation.mutate(payload);
-  };
-
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard", href: "/" }, { label: "Winners" }]} />
-        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600">
-                Upcoming Plans
-              </p>
-              <h2 className="text-lg font-semibold text-emerald-900">
-                Upcoming winner payout schedule
-              </h2>
-              <p className="text-sm text-emerald-700">
-                Keep payouts on time with the next scheduled plans.
-              </p>
-            </div>
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
-              {upcomingPlans.length} planned
-            </span>
-          </div>
-
-          {upcomingPlans.length === 0 ? (
-            <div className="mt-4 text-sm text-emerald-700">
-              No upcoming payout plans scheduled.
-            </div>
-          ) : (
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {upcomingPlans.map((plan) => (
-                (() => {
-                  const date = new Date(plan.date);
-                  const today = new Date();
-                  date.setHours(0, 0, 0, 0);
-                  today.setHours(0, 0, 0, 0);
-                  const diffMs = date.getTime() - today.getTime();
-                  const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
-                  const isUrgent = daysLeft <= 3;
-                  return (
-                <div
-                  key={plan.id}
-                  className={`rounded-xl border px-4 py-3 ${
-                    isUrgent
-                      ? "border-rose-200 bg-rose-50"
-                      : "border-emerald-200 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p
-                        className={`text-sm font-semibold ${
-                          isUrgent ? "text-rose-900" : "text-emerald-900"
-                        }`}
-                      >
-                        {plan.playerName}
-                      </p>
-                      <p
-                        className={`text-xs ${
-                          isUrgent ? "text-rose-700" : "text-emerald-700"
-                        }`}
-                      >
-                        {plan.date}
-                      </p>
-                    </div>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                        isUrgent
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {formatMoney(Number(plan.amount) || 0)}
-                    </span>
-                  </div>
-                  <div
-                    className={`mt-2 flex items-center justify-between text-xs ${
-                      isUrgent ? "text-rose-700" : "text-emerald-700"
-                    }`}
-                  >
-                    <span>Status: {plan.status}</span>
-                    <span>{daysLeft} days left</span>
-                  </div>
-                </div>
-                  );
-                })()
-              ))}
-            </div>
-          )}
-        </section>
 
         <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
           <p className="text-xs uppercase tracking-[0.3em] text-amber-200">Winners</p>
@@ -305,156 +110,17 @@ export default function WinnersPage() {
                 Track win totals, remaining balances, and scheduled payouts.
               </p>
             </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm">
-              Total planned: ${totalPlanned.toLocaleString("en-US")}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm">
+                Upcoming total: ${upcomingTotal.toLocaleString("en-US")}
+              </div>
+              <Link
+                href="/winners/add"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300"
+              >
+                Add Winner
+              </Link>
             </div>
-          </div>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-            <h2 className="text-lg font-semibold text-slate-900">Create Winner + Payment Plan</h2>
-            <p className="text-sm text-slate-500">Log a new winner and schedule their payments.</p>
-
-            {message && (
-              <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                {message}
-              </div>
-            )}
-            {error && (
-              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-
-            <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={onSubmit}>
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Player Name</label>
-                <input
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="Full name"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Status</label>
-                <select
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                >
-                  <option>PARTIALLY_PAID</option>
-                  <option>PAID</option>
-                  <option>UNPAID</option>
-                  <option>ON_HOLD</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Total Win Amount</label>
-                <input
-                  type="number"
-                  min={0}
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="12500"
-                  value={totalWinAmount}
-                  onChange={(e) => setTotalWinAmount(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Amount Paid</label>
-                <input
-                  type="number"
-                  min={0}
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="4000"
-                  value={amountPaid}
-                  onChange={(e) => setAmountPaid(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Player Contact</label>
-                <input
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="+1-972-555-1234"
-                  value={playerContact}
-                  onChange={(e) => setPlayerContact(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Winning Date</label>
-                <input
-                  type="datetime-local"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  value={winningDate}
-                  onChange={(e) => setWinningDate(e.target.value)}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-700">Payment Plan</h3>
-                  <button
-                    type="button"
-                    className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                    onClick={onAddPlanItem}
-                  >
-                    Add Payment
-                  </button>
-                </div>
-
-                <div className="mt-3 space-y-3">
-                  {planItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-                    >
-                      <input
-                        type="date"
-                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                        value={item.date}
-                        onChange={(e) => onUpdatePlanItem(item.id, { date: e.target.value })}
-                      />
-
-                      <input
-                        type="number"
-                        min={0}
-                        className="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                        placeholder="Amount"
-                        value={item.amount}
-                        onChange={(e) => onUpdatePlanItem(item.id, { amount: e.target.value })}
-                      />
-
-                      <button
-                        type="button"
-                        className="rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
-                        onClick={() => onRemovePlanItem(item.id)}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-              </div>
-
-              <div className="md:col-span-2">
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-                  disabled={createWinnerMutation.isPending}
-                >
-                  {createWinnerMutation.isPending ? "Saving..." : "Save Winner"}
-                </button>
-              </div>
-            </form>
           </div>
         </section>
 
@@ -529,30 +195,37 @@ export default function WinnersPage() {
                       {winner.playerName}
                     </Link>
                     <p className="text-xs text-slate-500">
-                      {winner.createdAt} · {winner.createdByUsername}
+                    {winner.createdAt} · {winner.createdByUsername}
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2 py-1 text-xs text-slate-600">
                     {winner.status}
                   </span>
                 </div>
-
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
                   <div>
                     Total Win
-                    <div className="text-sm font-semibold text-slate-800">{winner.totalWinAmount}</div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      {winner.totalWinAmount}
+                    </div>
                   </div>
                   <div>
                     Paid
-                    <div className="text-sm font-semibold text-slate-800">{winner.amountPaid}</div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      {winner.amountPaid}
+                    </div>
                   </div>
                   <div>
                     Remaining
-                    <div className="text-sm font-semibold text-slate-800">{winner.remainingAmount}</div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      {winner.remainingAmount}
+                    </div>
                   </div>
                   <div>
                     Status
-                    <div className="text-sm font-semibold text-slate-800">{winner.status}</div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      {winner.status}
+                    </div>
                   </div>
                 </div>
               </div>

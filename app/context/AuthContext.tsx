@@ -33,7 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const user: AuthUser = {
       userId: decoded.userId ,
-      email: decoded.email || decoded.sub,
+      email: decoded.email,
+      username: decoded.username || decoded.sub,
       role: decoded.role,
       businessName: decoded.businessName,
       businessId: decoded.businessId,

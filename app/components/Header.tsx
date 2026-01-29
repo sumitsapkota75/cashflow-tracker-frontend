@@ -3,6 +3,7 @@
 import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Bell } from "lucide-react";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -64,8 +65,15 @@ export default function Header() {
 
         {/* User info + logout */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/notifications"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-slate-500 hover:text-white"
+            aria-label="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+          </Link>
           <span className="text-amber-100 text-sm md:text-base">
-            Hello, {user?.email}
+            Hello, {user?.username}
           </span>
           <button
             onClick={() => {

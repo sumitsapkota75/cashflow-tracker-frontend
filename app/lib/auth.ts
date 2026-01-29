@@ -3,6 +3,7 @@ export type UserRole = "OWNER" | "MANAGER" | "EMPLOYEE";
 export interface AuthUser {
   userId: string;
   email: string;
+  username?: string;
   role: UserRole;
   businessName?: string;
   businessId?: string;

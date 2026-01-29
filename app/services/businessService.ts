@@ -87,7 +87,7 @@ export const businessService = {
   },
   updateBusiness: async (id: string | null, data: BusinessUpsert) => {
     const url = id ? `/business/${id}` : "/business";
-    const res = await api.put(url, data);
+    const res = await api.patch(url, data);
     return res.data;
   },
   

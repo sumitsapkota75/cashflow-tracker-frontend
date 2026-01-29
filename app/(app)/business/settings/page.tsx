@@ -79,7 +79,9 @@ export default function BusinessSettingsPage() {
     mutationFn: ({ id, data }: { id: string | null; data: BusinessUpsert }) =>
       businessService.updateBusiness(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["businesses"] });
+      queryClient.invalidateQueries({
+        queryKey: ["businesses", businessPage, businessPageSize],
+      });
       setEditingBusinessId(null);
     },
   });
