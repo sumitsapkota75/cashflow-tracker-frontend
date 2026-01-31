@@ -281,7 +281,8 @@ export default function PeriodPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl border border-slate-200">
+          <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200">
+            <div className="min-w-[720px]">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
               <span className="text-sm font-semibold text-slate-700">
                 {monthLabel}
@@ -421,6 +422,7 @@ export default function PeriodPage() {
                   })}
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </section>

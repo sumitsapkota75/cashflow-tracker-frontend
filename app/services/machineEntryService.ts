@@ -16,6 +16,7 @@ export interface MachineEntryData {
   difference?: number;
   openedAt?: string;
   username?: string;
+  hasPreviousEntry?: boolean;
 }
 
 export interface MachineEntryPayload {
@@ -35,6 +36,15 @@ export const machineEntryService = {
     const data = res.data;
     if (!data) return [];
     return Array.isArray(data) ? data : [data];
+  },
+  getRecentEntry: async (
+    machineId: string,
+    periodId: string
+  ): Promise<MachineEntryData | null> => {
+    const res = await api.get("/machine-entry/recent", {
+      params: { machineId, periodId },
+    });
+    return res.data ?? null;
   },
   createEntry: async (payload: MachineEntryPayload) => {
     const res = await api.post("/machine-entry", payload);
