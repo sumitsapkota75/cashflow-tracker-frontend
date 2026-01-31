@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { WinnerData, winnerService } from "@/app/services/winnerService";
 import Link from "next/link";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import Card from "@/app/components/Card";
+import Button, { ButtonLink } from "@/app/components/Button";
 
 type WinnerRow = {
   id: string;
@@ -29,16 +31,6 @@ const formatDateTime = (value: string) => {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  });
-};
-
-const formatDate = (value: string) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
   });
 };
 
@@ -99,43 +91,35 @@ export default function WinnersPage() {
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard", href: "/" }, { label: "Winners" }]} />
 
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-amber-200">Winners</p>
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold md:text-3xl">
+        <Card className="px-6 py-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">Winners</p>
+              <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
                 Payout plans for high-value winners
               </h1>
-              <p className="text-sm text-slate-200">
+              <p className="text-sm text-slate-500">
                 Track win totals, remaining balances, and scheduled payouts.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm">
+              <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
                 Upcoming total: ${upcomingTotal.toLocaleString("en-US")}
               </div>
-              <Link
-                href="/winners/add"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300"
-              >
-                Add Winner
-              </Link>
+              <ButtonLink href="/winners/add">Add Winner</ButtonLink>
             </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-          <div className="flex items-center justify-between">
+        <Card className="p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Winners Snapshot</h2>
               <p className="text-sm text-slate-500">Current tracked winners and balances.</p>
             </div>
-            <button
-              className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-              type="button"
-            >
+            <Button variant="secondary" size="sm" type="button">
               Export
-            </button>
+            </Button>
           </div>
 
           <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-100 md:block">
@@ -156,7 +140,7 @@ export default function WinnersPage() {
                   className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
                 >
                   <Link
-                    className="font-semibold text-slate-800 hover:text-slate-900"
+                    className="font-semibold text-slate-800 hover:text-blue-700"
                     href={`/winners/${winner.id}`}
                   >
                     {winner.playerName}
@@ -171,9 +155,7 @@ export default function WinnersPage() {
                   >
                     {winner.status}
                   </span>
-                  <span>
-                    {winner.createdAt === "-" ? "-" : new Date(winner.createdAt).toLocaleString("en-US")}
-                  </span>
+                  <span>{winner.createdAt}</span>
                   <span>{winner.createdByUsername}</span>
                 </div>
               ))}
@@ -189,13 +171,13 @@ export default function WinnersPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <Link
-                      className="font-semibold text-slate-800 hover:text-slate-900"
+                      className="font-semibold text-slate-800 hover:text-blue-700"
                       href={`/winners/${winner.id}`}
                     >
                       {winner.playerName}
                     </Link>
                     <p className="text-xs text-slate-500">
-                    {winner.createdAt} · {winner.createdByUsername}
+                      {winner.createdAt} · {winner.createdByUsername}
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-2 py-1 text-xs text-slate-600">
@@ -231,7 +213,7 @@ export default function WinnersPage() {
               </div>
             ))}
           </div>
-        </section>
+        </Card>
       </div>
     </AuthGuard>
   );

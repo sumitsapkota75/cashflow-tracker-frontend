@@ -1,7 +1,13 @@
-import { ThemeModeScript } from 'flowbite-react';
+import { ThemeModeScript } from "flowbite-react";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 import Providers from "./providers";
+
+const appSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-app-sans",
+});
 
 // root layout
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -10,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <ThemeModeScript />
       </head>
-      <body>
+      <body className={`${appSans.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -7,6 +7,9 @@ import { AuthGuard } from "@/app/context/authGuard";
 import { WinnerCreatePayload, winnerService } from "@/app/services/winnerService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
+import Card from "@/app/components/Card";
+import Button from "@/app/components/Button";
+import Input from "@/app/components/Input";
 
 type PlanItem = {
   id: string;
@@ -145,11 +148,13 @@ export default function AddWinnerPage() {
           ]}
         />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-          <h1 className="text-2xl font-semibold text-slate-900">Add Winner</h1>
-          <p className="text-sm text-slate-500">
-            Log a new winner and schedule their payout plan.
-          </p>
+        <Card className="p-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-slate-900">Add Winner</h1>
+            <p className="text-sm text-slate-500">
+              Log a new winner and schedule their payout plan.
+            </p>
+          </div>
 
           {message && (
             <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
@@ -162,22 +167,19 @@ export default function AddWinnerPage() {
             </div>
           )}
 
-          <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={onSubmit}>
-            <div>
-              <label className="text-sm font-semibold text-slate-700">Player Name</label>
-              <input
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                placeholder="Full name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                required
-              />
-            </div>
+          <form className="mt-6 grid gap-5 md:grid-cols-2" onSubmit={onSubmit}>
+            <Input
+              label="Player Name"
+              placeholder="Full name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              required
+            />
 
-            <div>
+            <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700">Status</label>
               <select
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
+                className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -188,86 +190,68 @@ export default function AddWinnerPage() {
               </select>
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-slate-700">Total Win Amount</label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="12500"
-                  value={totalWinAmount}
-                  onChange={(e) =>
-                    setTotalWinAmount(formatNumberInput(e.target.value))
-                  }
-                  required
-                />
+            <Input
+              label="Total Win Amount"
+              type="text"
+              inputMode="decimal"
+              placeholder="12500"
+              value={totalWinAmount}
+              onChange={(e) => setTotalWinAmount(formatNumberInput(e.target.value))}
+              required
+            />
+
+            <Input
+              label="Amount Paid"
+              type="text"
+              inputMode="decimal"
+              placeholder="4000"
+              value={amountPaid}
+              onChange={(e) => setAmountPaid(formatNumberInput(e.target.value))}
+              required
+            />
+
+            <Input
+              label="Player Contact"
+              placeholder="+1-972-555-1234"
+              value={playerContact}
+              onChange={(e) => setPlayerContact(e.target.value)}
+              required
+            />
+
+            <Input
+              label="Winning Date"
+              type="datetime-local"
+              value={winningDate}
+              onChange={(e) => setWinningDate(e.target.value)}
+              required
+            />
+
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-slate-700">Payment Plan</h3>
+                <Button type="button" variant="subtle" size="sm" onClick={onAddPlanItem}>
+                  Add Payment
+                </Button>
               </div>
 
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Amount Paid</label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="4000"
-                  value={amountPaid}
-                  onChange={(e) => setAmountPaid(formatNumberInput(e.target.value))}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Player Contact</label>
-                <input
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  placeholder="+1-972-555-1234"
-                  value={playerContact}
-                  onChange={(e) => setPlayerContact(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700">Winning Date</label>
-                <input
-                  type="datetime-local"
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  value={winningDate}
-                  onChange={(e) => setWinningDate(e.target.value)}
-                  required
-                />
-              </div>
-
-            <div className="md:col-span-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-700">Payment Plan</h3>
-                  <button
-                    type="button"
-                    className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-600"
-                    onClick={onAddPlanItem}
-                  >
-                    Add Payment
-                  </button>
-                </div>
-
-              <div className="mt-3 space-y-3">
+              <div className="space-y-3">
                 {planItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
                   >
+                    {/* Keep payment rows compact to reduce scrolling on mobile. */}
                     <input
                       type="date"
-                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="h-10 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                       value={item.date}
                       onChange={(e) => onUpdatePlanItem(item.id, { date: e.target.value })}
-                      
                     />
 
                     <input
                       type="text"
                       inputMode="decimal"
-                      className="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                      className="h-10 w-40 rounded-lg border border-slate-200 bg-white px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                       placeholder="Amount"
                       value={item.amount}
                       onChange={(e) =>
@@ -275,32 +259,29 @@ export default function AddWinnerPage() {
                           amount: formatNumberInput(e.target.value),
                         })
                       }
-                      
                     />
 
-                    <button
+                    <Button
                       type="button"
-                      className="rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => onRemovePlanItem(item.id)}
+                      className="text-rose-600 hover:bg-rose-50"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-                disabled={createWinnerMutation.isPending}
-              >
+              <Button type="submit" size="lg" disabled={createWinnerMutation.isPending}>
                 {createWinnerMutation.isPending ? "Saving..." : "Save Winner"}
-              </button>
+              </Button>
             </div>
           </form>
-        </section>
+        </Card>
       </div>
     </AuthGuard>
   );

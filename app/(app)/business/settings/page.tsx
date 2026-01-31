@@ -129,7 +129,7 @@ export default function BusinessSettingsPage() {
               </p>
             </div>
             <Link
-              className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
               href="/business/settings/add-business"
             >
               Add Business
@@ -241,7 +241,7 @@ export default function BusinessSettingsPage() {
                                 Cancel
                               </button>
                               <button
-                                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500"
+                                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500"
                                 onClick={() =>
                                   updateBusinessMutation.mutate({
                                     id: id || null,
@@ -348,7 +348,7 @@ export default function BusinessSettingsPage() {
                                 Cancel
                               </button>
                               <button
-                                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500"
+                                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500"
                                 onClick={() =>
                                   updateBusinessMutation.mutate({
                                     id: id || null,
@@ -562,7 +562,7 @@ export default function BusinessSettingsPage() {
                                 Cancel
                               </button>
                               <button
-                                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500"
+                                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500"
                                 onClick={() =>
                                   updateUserMutation.mutate({
                                     id,
@@ -674,7 +674,7 @@ export default function BusinessSettingsPage() {
                                 Cancel
                               </button>
                               <button
-                                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500"
+                                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500"
                                 onClick={() =>
                                   updateUserMutation.mutate({
                                     id,

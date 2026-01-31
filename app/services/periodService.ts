@@ -61,6 +61,10 @@ export const periodService = {
     const res = await api.get(`/periods/${periodId}`);
     return res.data;
   },
+  getRecentClosedPeriod: async (): Promise<PeriodData | null> => {
+    const res = await api.get("/periods/recent-closed");
+    return res.data ?? null;
+  },
   getBusinessPeriods: async (businessId: string): Promise<PeriodData[]> => {
     const res = await api.get(`/periods/business/${businessId}`);
     const data = res.data as PeriodListResponse | PeriodData[] | null;

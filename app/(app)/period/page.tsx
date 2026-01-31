@@ -42,6 +42,7 @@ export default function PeriodPage() {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [openCashIn, setOpenCashIn] = useState("");
   const [openCashOut, setOpenCashOut] = useState("");
+  const [hasOpenValuesEdited, setHasOpenValuesEdited] = useState(false);
   const [closeCashIn, setCloseCashIn] = useState("");
   const [closeCashOut, setCloseCashOut] = useState("");
   const [closeCashInAtm, setCloseCashInAtm] = useState("");
@@ -56,6 +57,7 @@ export default function PeriodPage() {
       setMessage("Period opened successfully.");
       setOpenCashIn("");
       setOpenCashOut("");
+      setHasOpenValuesEdited(false);
       setIsOpenModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["periods", businessId] });
       queryClient.invalidateQueries({ queryKey: ["active-period", businessId] });
@@ -93,11 +95,33 @@ export default function PeriodPage() {
     enabled: Boolean(businessId),
   });
 
+  const { data: recentClosedPeriod } = useQuery({
+    queryKey: ["recent-closed-period", businessId],
+    queryFn: periodService.getRecentClosedPeriod,
+    enabled: isOpenModalOpen && Boolean(businessId),
+  });
+
   useEffect(() => {
     if (activePeriod?.businessDate) {
       setSelectedDate(new Date(activePeriod.businessDate));
     }
   }, [activePeriod]);
+
+  useEffect(() => {
+    if (isOpenModalOpen) {
+      setHasOpenValuesEdited(false);
+    }
+  }, [isOpenModalOpen]);
+
+  useEffect(() => {
+    if (!isOpenModalOpen || hasOpenValuesEdited || !recentClosedPeriod) return;
+    setOpenCashIn(
+      formatNumberInput(String(recentClosedPeriod.totalCashInClose ?? ""))
+    );
+    setOpenCashOut(
+      formatNumberInput(String(recentClosedPeriod.totalCashOutClose ?? ""))
+    );
+  }, [hasOpenValuesEdited, isOpenModalOpen, recentClosedPeriod]);
 
   const periodByDate = useMemo(() => {
     const map = new Map<string, PeriodData>();
@@ -419,6 +443,12 @@ export default function PeriodPage() {
               <p className="mt-1 text-sm text-slate-500">
                 Create a new period for the selected date.
               </p>
+              {recentClosedPeriod && (
+                <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-xs text-blue-700">
+                  Prefilled from the last closed period on{" "}
+                  {recentClosedPeriod.businessDate}. You can edit these values.
+                </div>
+              )}
 
               <form
                 className="mt-4 grid gap-4"
@@ -467,9 +497,10 @@ export default function PeriodPage() {
                     className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                     placeholder="55000"
                     value={openCashIn}
-                    onChange={(event) =>
-                      setOpenCashIn(formatNumberInput(event.target.value))
-                    }
+                    onChange={(event) => {
+                      setHasOpenValuesEdited(true);
+                      setOpenCashIn(formatNumberInput(event.target.value));
+                    }}
                     required
                   />
                 </div>
@@ -483,9 +514,10 @@ export default function PeriodPage() {
                     className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                     placeholder="11000"
                     value={openCashOut}
-                    onChange={(event) =>
-                      setOpenCashOut(formatNumberInput(event.target.value))
-                    }
+                    onChange={(event) => {
+                      setHasOpenValuesEdited(true);
+                      setOpenCashOut(formatNumberInput(event.target.value));
+                    }}
                     required
                   />
                 </div>

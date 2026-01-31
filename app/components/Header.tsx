@@ -4,15 +4,27 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell } from "lucide-react";
+import {
+  Bell,
+  CalendarRange,
+  ChevronDown,
+  CreditCard,
+  HardDrive,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Trophy,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { winnerService } from "@/app/services/winnerService";
+import { cn } from "@/app/lib/cn";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const { data: winners = [] } = useQuery({
     queryKey: ["winners"],
@@ -42,113 +54,147 @@ export default function Header() {
     });
   }, [winners]);
 
-  // Role-based tabs
-  const tabs = (() => {
+  const navItems = (() => {
     switch (user?.role) {
       case "OWNER":
-        return [
-          { name: "Dashboard", href: "/" },
-          { name: "Period", href: "/period" },
-          { name: "Machine Entry", href: "/machines/open" },
-          { name: "Winners", href: "/winners" },
-          { name: "Payouts", href: "/payouts" },
-          { name: "Business Settings", href: "/business/settings" },
-        ];
       case "MANAGER":
         return [
-          { name: "Dashboard", href: "/" },
-          { name: "Period", href: "/period" },
-          { name: "Machine Entry", href: "/machines/open" },
-          { name: "Winners", href: "/winners" },
-          { name: "Payouts", href: "/payouts" },
-          { name: "Business Settings", href: "/business/settings" },
+          { name: "Dashboard", href: "/", icon: LayoutDashboard },
+          { name: "Period", href: "/period", icon: CalendarRange },
+          { name: "Machine Entry", href: "/machines/open", icon: HardDrive },
+          { name: "Winners", href: "/winners", icon: Trophy },
+          { name: "Payouts", href: "/payouts", icon: CreditCard },
+          { name: "Business Settings", href: "/business/settings", icon: Settings },
         ];
       case "EMPLOYEE":
         return [
-          { name: "Dashboard", href: "/" },
-          { name: "Period", href: "/period" },
-          { name: "Machine Entry", href: "/machines/open" },
-          { name: "Payouts", href: "/payouts" },
+          { name: "Dashboard", href: "/", icon: LayoutDashboard },
+          { name: "Period", href: "/period", icon: CalendarRange },
+          { name: "Machine Entry", href: "/machines/open", icon: HardDrive },
+          { name: "Payouts", href: "/payouts", icon: CreditCard },
         ];
       default:
         return [
-          { name: "Dashboard", href: "/" },
-          { name: "Period", href: "/period" },
-          { name: "Payouts", href: "/payouts" },
+          { name: "Dashboard", href: "/", icon: LayoutDashboard },
+          { name: "Period", href: "/period", icon: CalendarRange },
+          { name: "Payouts", href: "/payouts", icon: CreditCard },
         ];
     }
   })();
 
+  const userInitials = (user?.username || "U")
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
-    <header className="bg-slate-900 shadow-lg sticky top-0 z-50">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Logo / Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">₿</span>
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+            <span className="text-base font-semibold">MT</span>
           </div>
-          <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-emerald-400 to-cyan-400">
-            {user?.businessName || "Machine Tracker"}
-          </h1>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">
+              {user?.businessName || "Machine Tracker"}
+            </p>
+            <p className="text-xs text-slate-500">Operations console</p>
+          </div>
         </div>
 
-        {/* User info + logout */}
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsNotificationsOpen(true)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-slate-500 hover:text-white"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
+          <button
+            type="button"
+            onClick={() => setIsNotificationsOpen(true)}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+            aria-label="Notifications"
+          >
+            <Bell className="h-5 w-5" />
             {upcomingPlans.length > 0 && (
-              <span className="absolute -right-1 -top-1 inline-flex min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              <span className="absolute -right-1 -top-1 inline-flex min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                 {upcomingPlans.length}
               </span>
             )}
-          </div>
-          <span className="text-amber-100 text-sm md:text-base">
-            Hello, {user?.username}
-          </span>
-          <button
-            onClick={() => {
-              logout();
-              router.push('/login');
-            }}
-            className="px-4 py-2 bg-slate-800 text-slate-200 rounded-lg hover:bg-slate-700 transition"
-          >
-            Logout
           </button>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+              aria-expanded={isUserMenuOpen}
+              aria-haspopup="menu"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-semibold text-blue-700">
+                {userInitials}
+              </span>
+              <span className="hidden text-sm font-semibold text-slate-700 sm:block">
+                {user?.username || "User"}
+              </span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </button>
+
+            {isUserMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <div className="px-4 py-3">
+                  <p className="text-xs text-slate-400">Signed in as</p>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {user?.username || "User"}
+                  </p>
+                  <p className="text-xs text-slate-500">{user?.role || ""}</p>
+                </div>
+                <div className="border-t border-slate-100">
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      logout();
+                      router.push("/login");
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Scrollable tabs */}
-      <nav className="flex overflow-x-auto space-x-2 px-4 md:px-6 pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-        {tabs.map((tab) => {
-          const isActive = pathname === tab.href;
-          return (
-            <Link
-              key={tab.name}
-              href={tab.href}
-              className={`flex-shrink-0 px-5 py-2 text-sm md:text-base font-semibold border-b-4 transition-all duration-300 ${
-                isActive
-                  ? "text-emerald-400 border-emerald-500 rounded-t-lg bg-emerald-500/10"
-                  : "text-slate-400 border-transparent hover:border-slate-600 hover:text-slate-200"
-              }`}
-            >
-              {tab.name}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="border-t border-slate-100 bg-white">
+        <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-2 text-sm sm:px-6 lg:px-8">
+          {navItems.map((tab) => {
+            const isActive =
+              tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.name}
+                href={tab.href}
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-4 py-2 font-semibold transition",
+                  isActive
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.name}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
       {isNotificationsOpen && (
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-950/60"
+            className="absolute inset-0 bg-slate-900/40"
             onClick={() => setIsNotificationsOpen(false)}
             aria-label="Close notifications"
           />
@@ -164,7 +210,7 @@ export default function Header() {
               </div>
               <button
                 type="button"
-                className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                 onClick={() => {
                   setIsNotificationsOpen(false);
                   router.push("/notifications");
@@ -196,43 +242,48 @@ export default function Header() {
                           setIsNotificationsOpen(false);
                           router.push(`/winners/${plan.winnerId}`);
                         }}
-                        className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                        className={cn(
+                          "w-full rounded-xl border px-4 py-3 text-left transition",
                           isUrgent
                             ? "border-rose-200 bg-rose-50 hover:border-rose-300"
                             : "border-slate-200 bg-white hover:border-slate-300"
-                        }`}
+                        )}
                       >
                         <div className="flex items-center justify-between">
                           <div>
                             <p
-                              className={`text-sm font-semibold ${
+                              className={cn(
+                                "text-sm font-semibold",
                                 isUrgent ? "text-rose-900" : "text-slate-900"
-                              }`}
+                              )}
                             >
                               {plan.playerName}
                             </p>
                             <p
-                              className={`text-xs ${
+                              className={cn(
+                                "text-xs",
                                 isUrgent ? "text-rose-700" : "text-slate-500"
-                              }`}
+                              )}
                             >
                               {plan.date}
                             </p>
                           </div>
                           <span
-                            className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                            className={cn(
+                              "rounded-full px-2 py-1 text-xs font-semibold",
                               isUrgent
                                 ? "bg-rose-100 text-rose-700"
                                 : "bg-slate-100 text-slate-700"
-                            }`}
+                            )}
                           >
                             ${plan.amount.toLocaleString("en-US")}
                           </span>
                         </div>
                         <div
-                          className={`mt-2 flex items-center justify-between text-xs ${
+                          className={cn(
+                            "mt-2 flex items-center justify-between text-xs",
                             isUrgent ? "text-rose-700" : "text-slate-500"
-                          }`}
+                          )}
                         >
                           <span>Status: {plan.status}</span>
                           <span>{daysLeft} days left</span>

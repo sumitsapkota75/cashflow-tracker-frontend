@@ -298,22 +298,14 @@ export default function PayoutsPage() {
             </div>
             <div className="divide-y divide-slate-100">
               {rows.map((row) => (
-                <div
+                <Link
                   key={row.id}
-                  className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
+                  href={`/payouts/${row.id}?page=${page}&size=${pageSize}`}
+                  className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600 transition hover:bg-slate-50"
                 >
-                  {row.winnerId ? (
-                    <Link
-                      className="font-semibold text-slate-800 hover:text-slate-900"
-                      href={`/winners/${row.winnerId}`}
-                    >
-                      {row.winner}
-                    </Link>
-                  ) : (
-                    <span className="font-semibold text-slate-800">
-                      {row.winner}
-                    </span>
-                  )}
+                  <span className="font-semibold text-slate-800">
+                    {row.winner}
+                  </span>
                   <span>{row.amount}</span>
                   <span
                     className={`font-semibold ${
@@ -328,29 +320,21 @@ export default function PayoutsPage() {
                   <span>{row.payoutDate}</span>
                   <span>{row.remarks || "-"}</span>
                   <span>{row.createdByUser}</span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
 
           <div className="mt-4 space-y-3 md:hidden">
             {rows.map((row) => (
-              <div
+              <Link
                 key={row.id}
-                className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
+                href={`/payouts/${row.id}?page=${page}&size=${pageSize}`}
+                className="block rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm transition hover:bg-white"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    {row.winnerId ? (
-                      <Link
-                        className="font-semibold text-slate-800 hover:text-slate-900"
-                        href={`/winners/${row.winnerId}`}
-                      >
-                        {row.winner}
-                      </Link>
-                    ) : (
-                      <p className="font-semibold text-slate-800">{row.winner}</p>
-                    )}
+                    <p className="font-semibold text-slate-800">{row.winner}</p>
                     <p className="text-xs text-slate-500">{row.payoutDate}</p>
                     <p className="text-xs text-slate-500">{row.createdByUser}</p>
                   </div>
@@ -378,7 +362,7 @@ export default function PayoutsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">

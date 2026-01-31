@@ -1,41 +1,36 @@
 import { AuthGuard } from "../context/authGuard";
-import Link from "next/link";
 import Breadcrumbs from "../components/Breadcrumbs";
+import Card from "../components/Card";
+import { ButtonLink } from "../components/Button";
 
 export default function Dashboard() {
   return (
     <AuthGuard>
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard" }]} />
-        <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.25em] text-emerald-200">
-              Cash Flow Command
-            </p>
-            <h1 className="text-2xl font-semibold md:text-3xl">
-              Daily money movement at a glance.
-            </h1>
-            <p className="max-w-xl text-sm text-slate-200">
-              Track cash-in, safe drops, and payout ratios across every location
-              without digging through raw reports.
-            </p>
+
+        <Card className="px-6 py-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">
+                Operations Overview
+              </p>
+              <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+                Daily money movement at a glance.
+              </h1>
+              <p className="max-w-2xl text-sm text-slate-500">
+                Track cash-in, safe drops, and payout ratios across every location
+                without digging through raw reports.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/period" variant="secondary">
+                Manage Period
+              </ButtonLink>
+              <ButtonLink href="/machines/open">New Machine Entry</ButtonLink>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/period"
-              className="inline-flex items-center justify-center rounded-full border border-slate-500 px-5 py-2 text-sm font-medium text-white transition hover:border-slate-300"
-            >
-              Manage Period
-            </Link>
-            <Link
-              href="/machines/open"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-300"
-            >
-              New Machine Entry
-            </Link>
-            
-          </div>
-        </section>
+        </Card>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -43,51 +38,44 @@ export default function Dashboard() {
               label: "Total Cash In (30d)",
               value: "$182,640",
               delta: "+12.4%",
-              border: "border-emerald-500",
             },
             {
               label: "Net Profit (Last 7d)",
               value: "$38,920",
               delta: "+4.2%",
-              border: "border-cyan-500",
             },
             {
               label: "Safe Drop (Month)",
               value: "$61,300",
               delta: "-2.1%",
-              border: "border-amber-500",
             },
             {
               label: "Payout Ratio",
               value: "63%",
               delta: "Target 60%",
-              border: "border-indigo-500",
             },
           ].map((card) => (
-            <div
-              key={card.label}
-              className={`rounded-xl border-l-4 ${card.border} bg-white p-5 shadow-sm`}
-            >
+            <Card key={card.label} className="px-5 py-4">
               <p className="text-xs uppercase tracking-wide text-slate-400">
                 {card.label}
               </p>
-              <div className="mt-2 flex items-end justify-between">
+              <div className="mt-3 flex items-end justify-between">
                 <p className="text-2xl font-semibold text-slate-900">
                   {card.value}
                 </p>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
+                <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
                   {card.delta}
                 </span>
               </div>
               <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full w-2/3 rounded-full bg-slate-900/80" />
+                <div className="h-full w-2/3 rounded-full bg-blue-600/80" />
               </div>
-            </div>
+            </Card>
           ))}
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <Card className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">
@@ -98,7 +86,7 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="h-2 w-2 rounded-full bg-blue-600" />
                 Cash In
                 <span className="ml-3 h-2 w-2 rounded-full bg-slate-300" />
                 Payouts
@@ -109,7 +97,7 @@ export default function Dashboard() {
                 (height, index) => (
                   <div key={`cash-${index}`} className="space-y-1">
                     <div
-                      className="rounded-lg bg-emerald-500"
+                      className="rounded-lg bg-blue-600"
                       style={{ height: `${height}px` }}
                     />
                     <div
@@ -126,9 +114,9 @@ export default function Dashboard() {
               <span>Week 8</span>
               <span>Week 12</span>
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Location Pulse
             </h2>
@@ -159,16 +147,16 @@ export default function Dashboard() {
                     </span>
                   </div>
                   <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white">
-                    <div className="h-full w-3/4 rounded-full bg-slate-900" />
+                    <div className="h-full w-3/4 rounded-full bg-blue-600" />
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2">
+          <Card className="p-6 lg:col-span-2">
             <h2 className="text-lg font-semibold text-slate-900">
               Upcoming Safe Drops
             </h2>
@@ -201,21 +189,19 @@ export default function Dashboard() {
                     <p className="font-medium text-slate-800">{drop.site}</p>
                     <p className="text-xs text-slate-500">{drop.date}</p>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
                     {drop.amount}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <Card className="p-6">
             <h2 className="text-lg font-semibold text-slate-900">
               Notes for Shift
             </h2>
-            <p className="text-sm text-slate-500">
-              Alerts and next actions.
-            </p>
+            <p className="text-sm text-slate-500">Alerts and next actions.</p>
             <div className="mt-4 space-y-3 text-sm">
               {[
                 "Vault count reconciliation due Thursday.",
@@ -230,7 +216,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         </section>
       </div>
     </AuthGuard>

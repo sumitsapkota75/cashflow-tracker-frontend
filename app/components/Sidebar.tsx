@@ -1,25 +1,30 @@
 import Link from "next/link";
+import { LayoutDashboard, Cpu, CalendarRange, FileText } from "lucide-react";
 
 const menu = [
-  { name: "Dashboard", href: "/" },
-  { name: "Open Machine", href: "/machines/open" },
-  { name: "Day Close", href: "/day-close" },
-  { name: "Reports", href: "/reports" }
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Open Machine", href: "/machines/open", icon: Cpu },
+  { name: "Day Close", href: "/day-close", icon: CalendarRange },
+  { name: "Reports", href: "/reports", icon: FileText },
 ];
 
 export default function Sidebar() {
   return (
-    <aside className="hidden md:block w-64 bg-white border-r min-h-screen">
-      <nav className="p-4 space-y-2">
-        {menu.map(item => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="block px-4 py-3 rounded-lg text-lg font-medium hover:bg-blue-50"
-          >
-            {item.name}
-          </Link>
-        ))}
+    <aside className="hidden w-64 border-r border-slate-200 bg-white px-4 py-6 md:block">
+      <nav className="space-y-1">
+        {menu.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            >
+              <Icon className="h-4 w-4" />
+              {item.name}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );
