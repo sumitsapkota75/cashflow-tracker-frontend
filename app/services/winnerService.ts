@@ -48,4 +48,10 @@ export const winnerService = {
     const res = await api.get(`/winners/${id}`);
     return res.data as WinnerData;
   },
+  updatePaymentPlan: async (winnerId: string, paymentPlan: PaymentPlanItem[]) => {
+    const res = await api.put(`/winners/update-plan/${winnerId}`, {
+      paymentPlan,
+    });
+    return res.data as WinnerData;
+  },
 };

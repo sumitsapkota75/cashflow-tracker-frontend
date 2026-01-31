@@ -8,6 +8,7 @@ import { periodService } from "@/app/services/periodService";
 import {
   machineEntryService,
 } from "@/app/services/machineEntryService";
+import { payoutService } from "@/app/services/payoutService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 function formatCurrency(value?: number | null) {
@@ -34,6 +35,12 @@ export default function PeriodDetailPage() {
   const { data: machineEntries = [], isLoading: entriesLoading } = useQuery({
     queryKey: ["machine-entries", periodId],
     queryFn: () => machineEntryService.getByPeriod(periodId as string),
+    enabled: Boolean(periodId),
+  });
+
+  const { data: periodPayouts = [], isLoading: payoutsLoading } = useQuery({
+    queryKey: ["payouts", "period", periodId],
+    queryFn: () => payoutService.getPayoutsByPeriod(periodId as string),
     enabled: Boolean(periodId),
   });
 
@@ -93,25 +100,12 @@ export default function PeriodDetailPage() {
                   value: formatCurrency(period?.totalCashOutOpen),
                 },
                 {
-                  label: "Cash In ATM (Open)",
-                  value: formatCurrency(period?.cashInAtmOpen ?? null),
-                },
-                {
-                  label: "Safe Drop",
-                  value: formatCurrency(period?.safeDrop ?? null),
-                  emphasis: "safedrop",
-                },
-                {
                   label: "Total Cash In (Close)",
                   value: formatCurrency(period?.totalCashInClose),
                 },
                 {
                   label: "Total Cash Out (Close)",
                   value: formatCurrency(period?.totalCashOutClose),
-                },
-                {
-                  label: "Cash In ATM (Close)",
-                  value: formatCurrency(period?.cashInAtmClose ?? null),
                 },
                 {
                   label: "Net Open",
@@ -125,6 +119,11 @@ export default function PeriodDetailPage() {
                   label: "Final Net",
                   value: formatCurrency(finalNet),
                   emphasis: "net",
+                },
+                {
+                  label: "Safe Drop",
+                  value: formatCurrency(period?.safeDrop ?? null),
+                  emphasis: "safedrop",
                 },
                 {
                   label: "Payout",
@@ -300,6 +299,89 @@ export default function PeriodDetailPage() {
                       <span className="font-semibold text-slate-700">
                         {formatCurrency(entry.netFromReport ?? null)}
                       </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Period Payouts
+            </h2>
+            <span className="text-xs text-slate-400">
+              {periodPayouts.length} payouts
+            </span>
+          </div>
+
+          {payoutsLoading ? (
+            <div className="mt-4 text-sm text-slate-500">Loading payouts...</div>
+          ) : periodPayouts.length === 0 ? (
+            <div className="mt-4 text-sm text-slate-500">
+              No payouts recorded for this period.
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-100 md:block">
+                <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <span>Winner / Reason</span>
+                  <span>Amount</span>
+                  <span>Status</span>
+                  <span>Date</span>
+                  <span>Remarks</span>
+                </div>
+                <div className="divide-y divide-slate-100">
+                  {periodPayouts.map((payout) => (
+                    <div
+                      key={payout.id}
+                      className="grid grid-cols-[1.2fr_1fr_1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
+                    >
+                      <div>
+                        <p className="font-medium text-slate-800">
+                          {payout.winnerName || payout.reasonType || "Other"}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {payout.reasonType ?? "—"}
+                        </p>
+                      </div>
+                      <span>{formatCurrency(payout.amount ?? null)}</span>
+                      <span className="font-semibold text-slate-700">
+                        {payout.status ?? "—"}
+                      </span>
+                      <span>{formatDateTime(payout.payoutDate)}</span>
+                      <span>{payout.remarks ?? "—"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3 md:hidden">
+                {periodPayouts.map((payout) => (
+                  <div
+                    key={payout.id}
+                    className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-slate-800">
+                          {payout.winnerName || payout.reasonType || "Other"}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {formatDateTime(payout.payoutDate)}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">
+                        {formatCurrency(payout.amount ?? null)}
+                      </span>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-500">
+                      Status: {payout.status ?? "—"}
+                    </div>
+                    <div className="mt-2 text-xs text-slate-500">
+                      Remarks: {payout.remarks ?? "—"}
                     </div>
                   </div>
                 ))}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AuthGuard } from "@/app/context/authGuard";
 import { winnerService } from "@/app/services/winnerService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { payoutService } from "@/app/services/payoutService";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 function formatCurrency(value?: number | null) {
   if (value == null) return "-";
@@ -30,6 +31,10 @@ export default function WinnerDetailPage() {
   const [reasonType, setReasonType] = useState("WINNER_PAYOUT");
   const [remarks, setRemarks] = useState("");
   const [formError, setFormError] = useState("");
+  const [planMessage, setPlanMessage] = useState("");
+  const [paymentPlanDraft, setPaymentPlanDraft] = useState<
+    { date: string; amount: string; status?: string }[]
+  >([]);
 
   const { data: winner, isLoading } = useQuery({
     queryKey: ["winner", winnerId],
@@ -61,6 +66,34 @@ export default function WinnerDetailPage() {
       setFormError("Unable to create payout. Try again.");
     },
   });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: (paymentPlan: { date: string; amount: string; status?: string }[]) =>
+      winnerService.updatePaymentPlan(
+        winnerId as string,
+        paymentPlan.map((plan) => ({
+          ...plan,
+          amount: parseNumberInput(plan.amount),
+        }))
+      ),
+    onSuccess: () => {
+      setPlanMessage("Payment plan saved.");
+      queryClient.invalidateQueries({ queryKey: ["winner", winnerId] });
+    },
+    onError: () => {
+      setPlanMessage("Unable to save payment plan. Try again.");
+    },
+  });
+
+  useEffect(() => {
+    setPaymentPlanDraft(
+      winner?.paymentPlan?.map((plan) => ({
+        date: plan.date,
+        amount: formatNumberInput(String(plan.amount ?? "")),
+        status: plan.status ?? "SCHEDULED",
+      })) ?? []
+    );
+  }, [winner?.paymentPlan]);
   return (
     <AuthGuard allowedRoles={["OWNER", "MANAGER"]}>
       <div className="space-y-6">
@@ -260,7 +293,7 @@ export default function WinnerDetailPage() {
                 onSubmit={(event) => {
                   event.preventDefault();
                   setFormError("");
-                  if (!amount || Number(amount) <= 0) {
+                  if (!amount || parseNumberInput(amount) <= 0) {
                     setFormError("Enter a valid payout amount.");
                     return;
                   }
@@ -271,7 +304,7 @@ export default function WinnerDetailPage() {
                   createPayoutMutation.mutate({
                     winnerID: winnerId,
                     winnerName: winner?.playerName,
-                    amount: Number(amount),
+                    amount: parseNumberInput(amount),
                     payoutDate,
                     status,
                     remarks,
@@ -284,11 +317,13 @@ export default function WinnerDetailPage() {
                     Amount
                   </label>
                   <input
-                    type="number"
-                    min={0}
+                    type="text"
+                    inputMode="decimal"
                     className="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"
                     value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
+                    onChange={(event) =>
+                      setAmount(formatNumberInput(event.target.value))
+                    }
                     required
                   />
                 </div>
@@ -372,60 +407,241 @@ export default function WinnerDetailPage() {
                 Scheduled payments for this winner.
               </p>
             </div>
-            <span className="text-xs text-slate-400">
-              {(winner?.paymentPlan ?? []).length} plans
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400">
+                {paymentPlanDraft.length} plans
+              </span>
+              <button
+                type="button"
+                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                onClick={() =>
+                  setPaymentPlanDraft((prev) => [
+                    ...prev,
+                    { date: "", amount: "", status: "SCHEDULED" },
+                  ])
+                }
+              >
+                Add Plan
+              </button>
+            </div>
           </div>
 
-          {!winner?.paymentPlan || winner.paymentPlan.length === 0 ? (
+          {planMessage && (
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+              {planMessage}
+            </div>
+          )}
+
+          {paymentPlanDraft.length === 0 ? (
             <div className="mt-4 text-sm text-slate-500">
               No payment plans found.
             </div>
           ) : (
             <>
               <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-100 md:block">
-                <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <div className="grid grid-cols-[1fr_1fr_1fr_120px] gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   <span>Date</span>
                   <span>Amount</span>
                   <span>Status</span>
+                  <span className="text-right">Actions</span>
                 </div>
                 <div className="divide-y divide-slate-100">
-                  {winner.paymentPlan.map((plan) => (
+                  {paymentPlanDraft.map((plan, index) => {
+                    const isCompleted = plan.status === "COMPLETED";
+                    return (
                     <div
-                      key={`${plan.date}-${plan.amount}`}
-                      className="grid grid-cols-[1fr_1fr_1fr] gap-2 px-4 py-3 text-sm text-slate-600"
+                      key={index}
+                      className="grid grid-cols-[1fr_1fr_1fr_120px] gap-2 px-4 py-3 text-sm text-slate-600"
                     >
-                      <span>{plan.date}</span>
-                      <span>{formatCurrency(plan.amount)}</span>
-                      <span className="font-semibold text-slate-700">
-                        {plan.status ?? "SCHEDULED"}
-                      </span>
+                      {isCompleted && (
+                        <span className="col-span-full inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          <span aria-hidden="true">🔒</span> Completed plan locked
+                        </span>
+                      )}
+                      <input
+                        type="date"
+                        className="rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.date}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? { ...item, date: event.target.value }
+                                : item
+                            )
+                          )
+                        }
+                      />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.amount}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? {
+                                    ...item,
+                                    amount: formatNumberInput(event.target.value),
+                                  }
+                                : item
+                            )
+                          )
+                        }
+                      />
+                      <select
+                        className="rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.status ?? "SCHEDULED"}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? { ...item, status: event.target.value }
+                                : item
+                            )
+                          )
+                        }
+                      >
+                        <option>SCHEDULED</option>
+                        <option>COMPLETED</option>
+                        <option>CANCELLED</option>
+                        <option>POSTPONED</option>
+                      </select>
+                      <div className="text-right">
+                        <button
+                          type="button"
+                          className="rounded-md border border-rose-200 px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                          disabled={isCompleted}
+                          onClick={() =>
+                            setPaymentPlanDraft((prev) =>
+                              prev.filter((_, idx) => idx !== index)
+                            )
+                          }
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
 
               <div className="mt-4 space-y-3 md:hidden">
-                {winner.paymentPlan.map((plan) => (
+                {paymentPlanDraft.map((plan, index) => {
+                  const isCompleted = plan.status === "COMPLETED";
+                  return (
                   <div
-                    key={`${plan.date}-${plan.amount}`}
+                    key={index}
                     className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-800">
-                          {plan.date}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {plan.status ?? "SCHEDULED"}
-                        </p>
+                    {isCompleted && (
+                      <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        <span aria-hidden="true">🔒</span> Completed plan locked
                       </div>
-                      <span className="rounded-full bg-white px-2 py-1 text-xs text-slate-600">
-                        {formatCurrency(plan.amount)}
-                      </span>
+                    )}
+                    <div className="space-y-2">
+                      <input
+                        type="date"
+                        className="w-full rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.date}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? { ...item, date: event.target.value }
+                                : item
+                            )
+                          )
+                        }
+                      />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="w-full rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.amount}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? {
+                                    ...item,
+                                    amount: formatNumberInput(event.target.value),
+                                  }
+                                : item
+                            )
+                          )
+                        }
+                      />
+                      <select
+                        className="w-full rounded-md border border-slate-200 px-2 py-1 text-sm disabled:bg-slate-100"
+                        value={plan.status ?? "SCHEDULED"}
+                        disabled={isCompleted}
+                        onChange={(event) =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.map((item, idx) =>
+                              idx === index
+                                ? { ...item, status: event.target.value }
+                                : item
+                            )
+                          )
+                        }
+                      >
+                        <option>SCHEDULED</option>
+                        <option>PAID</option>
+                        <option>COMPLETED</option>
+                        <option>CANCELLED</option>
+                        <option>POSTPONED</option>
+                      </select>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                      <span>Status: {plan.status ?? "SCHEDULED"}</span>
+                      <button
+                        type="button"
+                        className="rounded-md border border-rose-200 px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                        disabled={isCompleted}
+                        onClick={() =>
+                          setPaymentPlanDraft((prev) =>
+                            prev.filter((_, idx) => idx !== index)
+                          )
+                        }
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
-                ))}
+                );
+                })}
+              </div>
+
+              <div className="mt-4 flex items-center justify-end">
+                <button
+                  type="button"
+                  className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                  disabled={updatePlanMutation.isPending}
+                  onClick={() => {
+                    setPlanMessage("");
+                    const invalidRow = paymentPlanDraft.find(
+                      (plan) =>
+                        !plan.date ||
+                        plan.amount === "" ||
+                        parseNumberInput(plan.amount) < 0
+                    );
+                    if (invalidRow) {
+                      setPlanMessage("Fill both date and amount for each plan.");
+                      return;
+                    }
+                    updatePlanMutation.mutate(paymentPlanDraft);
+                  }}
+                >
+                  {updatePlanMutation.isPending ? "Saving..." : "Save Changes"}
+                </button>
               </div>
             </>
           )}

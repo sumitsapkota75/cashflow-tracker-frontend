@@ -12,6 +12,7 @@ import {
 } from "@/app/services/machineEntryService";
 import ImageUpload, { ImageFile } from "@/app/components/ImageUpload";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 const reasons: MachineEntryPayload["reason"][] = [
   "MID_DAY",
@@ -189,19 +190,19 @@ export default function MachineEntryPage() {
                   netFromReport,
                   safeDroppedAmount,
                 ];
-                if (numericFields.some((value) => Number(value) < 0)) {
+                if (numericFields.some((value) => parseNumberInput(value) < 0)) {
                   setMessage("Values must be zero or greater.");
                   return;
                 }
 
                 createEntryMutation.mutate({
                   machineId,
-                  reportCashIn,
-                  reportCashOut,
-                  physicalCash: Number(physicalCash),
-                  netFromReport,
+                  reportCashIn: String(parseNumberInput(reportCashIn)),
+                  reportCashOut: String(parseNumberInput(reportCashOut)),
+                  physicalCash: parseNumberInput(physicalCash),
+                  netFromReport: String(parseNumberInput(netFromReport)),
                   remarks,
-                  safeDroppedAmount: Number(safeDroppedAmount),
+                  safeDroppedAmount: parseNumberInput(safeDroppedAmount),
                   reason,
                 });
               }}
@@ -232,11 +233,13 @@ export default function MachineEntryPage() {
                   Report Cash In
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   value={reportCashIn}
-                  onChange={(event) => setReportCashIn(event.target.value)}
+                  onChange={(event) =>
+                    setReportCashIn(formatNumberInput(event.target.value))
+                  }
                   required
                 />
               </div>
@@ -245,72 +248,48 @@ export default function MachineEntryPage() {
                   Report Cash Out
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   value={reportCashOut}
-                  onChange={(event) => setReportCashOut(event.target.value)}
+                  onChange={(event) =>
+                    setReportCashOut(formatNumberInput(event.target.value))
+                  }
                   required
                 />
               </div>
               <div>
                 <label className="text-base font-semibold text-slate-700">
-                  Physical Cash
+                  Physical Cash Collected
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   value={physicalCash}
-                  onChange={(event) => setPhysicalCash(event.target.value)}
+                  onChange={(event) =>
+                    setPhysicalCash(formatNumberInput(event.target.value))
+                  }
                   required
                 />
               </div>
-              <div>
-                <label className="text-base font-semibold text-slate-700">
-                  Net From Report
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  value={netFromReport}
-                  onChange={(event) => setNetFromReport(event.target.value)}
-                  required
-                />
-              </div>
+              
               <div>
                 <label className="text-base font-semibold text-slate-700">
                   Safe Dropped Amount
                 </label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   value={safeDroppedAmount}
-                  onChange={(event) => setSafeDroppedAmount(event.target.value)}
+                  onChange={(event) =>
+                    setSafeDroppedAmount(formatNumberInput(event.target.value))
+                  }
                   required
                 />
               </div>
-              <div>
-                <label className="text-base font-semibold text-slate-700">
-                  Reason
-                </label>
-                <select
-                  className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
-                  value={reason}
-                  onChange={(event) =>
-                    setReason(event.target.value as MachineEntryPayload["reason"])
-                  }
-                  required
-                >
-                  {reasons.map((option) => (
-                    <option key={option} value={option}>
-                      {option.replace("_", " ")}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              
               <div className="md:col-span-2">
                 <label className="text-base font-semibold text-slate-700">
                   Remarks
@@ -406,6 +385,9 @@ export default function MachineEntryPage() {
                           </p>
                           <p className="text-xs text-slate-400">
                             {entry.reason ?? "—"}
+                          </p>
+                           <p className="text-xs text-slate-400">
+                            {entry.username ?? "—"}
                           </p>
                         </div>
                         <span>

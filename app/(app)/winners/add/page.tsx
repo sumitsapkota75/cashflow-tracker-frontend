@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AuthGuard } from "@/app/context/authGuard";
 import { WinnerCreatePayload, winnerService } from "@/app/services/winnerService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 type PlanItem = {
   id: string;
@@ -30,13 +31,13 @@ const newPlanItem = (): PlanItem => ({
 const buildPaymentPlan = (items: PlanItem[]): PaymentPlanPayloadItem[] => {
   return items.map((item) => ({
     date: (item.date ?? "").trim(),
-    amount: (item.amount ?? "").trim(),
+    amount: String(parseNumberInput(item.amount ?? "")),
     status: "SCHEDULED",
   }));
 };
 
 const toNumber = (value: string) => {
-  const n = Number(value);
+  const n = parseNumberInput(value);
   return Number.isFinite(n) ? n : 0;
 };
 
@@ -190,12 +191,14 @@ export default function AddWinnerPage() {
             <div>
               <label className="text-sm font-semibold text-slate-700">Total Win Amount</label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   placeholder="12500"
                   value={totalWinAmount}
-                  onChange={(e) => setTotalWinAmount(e.target.value)}
+                  onChange={(e) =>
+                    setTotalWinAmount(formatNumberInput(e.target.value))
+                  }
                   required
                 />
               </div>
@@ -203,12 +206,12 @@ export default function AddWinnerPage() {
               <div>
                 <label className="text-sm font-semibold text-slate-700">Amount Paid</label>
                 <input
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="decimal"
                   className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                   placeholder="4000"
                   value={amountPaid}
-                  onChange={(e) => setAmountPaid(e.target.value)}
+                  onChange={(e) => setAmountPaid(formatNumberInput(e.target.value))}
                   required
                 />
               </div>
@@ -262,12 +265,16 @@ export default function AddWinnerPage() {
                     />
 
                     <input
-                      type="number"
-                      min={0}
+                      type="text"
+                      inputMode="decimal"
                       className="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                       placeholder="Amount"
                       value={item.amount}
-                      onChange={(e) => onUpdatePlanItem(item.id, { amount: e.target.value })}
+                      onChange={(e) =>
+                        onUpdatePlanItem(item.id, {
+                          amount: formatNumberInput(e.target.value),
+                        })
+                      }
                       
                     />
 

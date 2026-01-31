@@ -10,15 +10,16 @@ import {
   BusinessUpsert,
 } from "@/app/services/businessService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 export default function AddBusinessPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<BusinessUpsert>({
+  const [form, setForm] = useState({
     name: "",
     location: "",
-    numberOfMachines: 0,
   });
+  const [numberOfMachinesInput, setNumberOfMachinesInput] = useState("");
   const [error, setError] = useState("");
 
   const createMutation = useMutation({
@@ -68,7 +69,12 @@ export default function AddBusinessPage() {
           onSubmit={(event) => {
             event.preventDefault();
             setError("");
-            createMutation.mutate(form);
+            const payload: BusinessUpsert = {
+              name: form.name,
+              location: form.location,
+              numberOfMachines: parseNumberInput(numberOfMachinesInput),
+            };
+            createMutation.mutate(payload);
           }}
         >
           <div className="space-y-1">
@@ -100,15 +106,12 @@ export default function AddBusinessPage() {
               Number of Machines
             </label>
             <input
-              type="number"
-              min={0}
+              type="text"
+              inputMode="decimal"
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={form.numberOfMachines}
+              value={numberOfMachinesInput}
               onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  numberOfMachines: Number(event.target.value),
-                }))
+                setNumberOfMachinesInput(formatNumberInput(event.target.value))
               }
               required
             />

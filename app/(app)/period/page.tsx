@@ -10,6 +10,7 @@ import {
   PeriodData,
 } from "@/app/services/periodService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -37,10 +38,15 @@ export default function PeriodPage() {
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [cashIn, setCashIn] = useState("");
-  const [cashOut, setCashOut] = useState("");
-  const [cashInAtm, setCashInAtm] = useState("");
-  const [safeDrop, setSafeDrop] = useState("");
+  const [isOpenModalOpen, setIsOpenModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  const [openCashIn, setOpenCashIn] = useState("");
+  const [openCashOut, setOpenCashOut] = useState("");
+  const [closeCashIn, setCloseCashIn] = useState("");
+  const [closeCashOut, setCloseCashOut] = useState("");
+  const [closeCashInAtm, setCloseCashInAtm] = useState("");
+  const [closeSafeDrop, setCloseSafeDrop] = useState("");
+  const [closeImages, setCloseImages] = useState<File[]>([]);
   const [message, setMessage] = useState("");
   const businessId = user?.businessId ?? "";
 
@@ -48,10 +54,9 @@ export default function PeriodPage() {
     mutationFn: periodService.openPeriod,
     onSuccess: () => {
       setMessage("Period opened successfully.");
-      setCashIn("");
-      setCashOut("");
-      setCashInAtm("");
-      setSafeDrop("");
+      setOpenCashIn("");
+      setOpenCashOut("");
+      setIsOpenModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["periods", businessId] });
       queryClient.invalidateQueries({ queryKey: ["active-period", businessId] });
     },
@@ -62,11 +67,13 @@ export default function PeriodPage() {
     mutationFn: periodService.closePeriod,
     onSuccess: () => {
       setMessage("Period closed successfully. You can open a new period.");
-      setCashIn("");
-      setCashOut("");
-      setCashInAtm("");
-      setSafeDrop("");
+      setCloseCashIn("");
+      setCloseCashOut("");
+      setCloseCashInAtm("");
+      setCloseSafeDrop("");
+      setCloseImages([]);
       setSelectedDate(null);
+      setIsCloseModalOpen(false);
       queryClient.setQueryData(["active-period", businessId], null);
       queryClient.invalidateQueries({ queryKey: ["periods", businessId] });
       queryClient.invalidateQueries({ queryKey: ["active-period", businessId] });
@@ -150,19 +157,31 @@ export default function PeriodPage() {
             { label: "Period" },
           ]}
         />
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Period control
-          </h2>
-          <p className="text-sm text-slate-500">
-            {activePeriod?.status === "OPEN"
-              ? `Close the open period for ${activePeriod.businessDate}.`
-              : selectedDate
-              ? `Opening period for ${formatDate(selectedDate)}.`
-              : "Select a day on the calendar to begin."}
-          </p>
+        <section className="rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">
+                Period control
+              </h2>
+              <p className="text-xs text-slate-500">
+                {activePeriod?.status === "OPEN"
+                  ? `Close the open period for ${activePeriod.businessDate}.`
+                  : "Select a day on the calendar to open a new period."}
+              </p>
+            </div>
+            {activePeriod?.status === "OPEN" && (
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60"
+                onClick={() => setIsCloseModalOpen(true)}
+                disabled={closePeriodMutation.isPending || !businessId}
+              >
+                Close Period
+              </button>
+            )}
+          </div>
           {activePeriod?.status === "OPEN" && (
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-emerald-600">
@@ -172,165 +191,23 @@ export default function PeriodPage() {
                     {activePeriod.businessDate} is currently open.
                   </p>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
                   OPEN
                 </span>
               </div>
             </div>
           )}
           {!businessId && (
-            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-700">
               Assign a business to your account to manage periods.
             </div>
           )}
           {message && (
-            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+            <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-600">
               {message}
             </div>
           )}
 
-          <form
-            className="mt-6 grid gap-4 md:grid-cols-3"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setMessage("");
-              if (
-                Number(cashIn) < 0 ||
-                Number(cashOut) < 0 ||
-                Number(cashInAtm) < 0 ||
-                Number(safeDrop) < 0
-              ) {
-                setMessage("Cash values must be zero or greater.");
-                return;
-              }
-              if (activePeriod?.status === "OPEN") {
-                closePeriodMutation.mutate({
-                  periodId: activePeriod.id,
-                  totalCashInClose: Number(cashIn),
-                  totalCashOutClose: Number(cashOut),
-                  cashInAtmClose: Number(cashInAtm),
-                  safeDropClose: Number(safeDrop),
-                });
-                return;
-              }
-              if (!selectedDate) {
-                setMessage("Please select a business date.");
-                return;
-              }
-              if (selectedPeriod?.status === "CLOSED") {
-                setMessage("That day is already closed and cannot be reopened.");
-                return;
-              }
-              openPeriodMutation.mutate({
-                businessDate: formatDate(selectedDate),
-                totalCashInOpen: Number(cashIn),
-                totalCashOutOpen: Number(cashOut),
-              });
-            }}
-          >
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                Business Date
-              </label>
-              <input
-                className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                value={
-                  activePeriod?.status === "OPEN"
-                    ? activePeriod.businessDate
-                    : selectedDate
-                    ? formatDate(selectedDate)
-                    : ""
-                }
-                readOnly
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                {activePeriod?.status === "OPEN"
-                  ? "Total Cash In (Close)"
-                  : "Total Cash In (Open)"}
-              </label>
-              <input
-                type="number"
-                min={0}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                placeholder={activePeriod?.status === "OPEN" ? "0" : "55000"}
-                value={cashIn}
-                onChange={(event) => setCashIn(event.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                {activePeriod?.status === "OPEN"
-                  ? "Total Cash Out (Close)"
-                  : "Total Cash Out (Open)"}
-              </label>
-              <input
-                type="number"
-                min={0}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                placeholder={activePeriod?.status === "OPEN" ? "0" : "11000"}
-                value={cashOut}
-                onChange={(event) => setCashOut(event.target.value)}
-                required
-              />
-            </div>
-            {activePeriod?.status === "OPEN" && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">
-                    Cash In ATM (Close)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="0"
-                    value={cashInAtm}
-                    onChange={(event) => setCashInAtm(event.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">
-                    Safe Drop (Close)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="0"
-                    value={safeDrop}
-                    onChange={(event) => setSafeDrop(event.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-            <div className="md:col-span-3">
-              <button
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-                type="submit"
-                disabled={
-                  openPeriodMutation.isPending ||
-                  closePeriodMutation.isPending ||
-                  !businessId ||
-                  (activePeriod?.status !== "OPEN" && !selectedDate) ||
-                  (activePeriod?.status !== "OPEN" &&
-                    selectedPeriod?.status === "CLOSED")
-                }
-              >
-                {activePeriod?.status === "OPEN"
-                  ? closePeriodMutation.isPending
-                    ? "Closing..."
-                    : "Close Period"
-                  : openPeriodMutation.isPending
-                  ? "Opening..."
-                  : "Open Period"}
-              </button>
-            </div>
-          </form>
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
@@ -459,9 +336,12 @@ export default function PeriodPage() {
                               "That day is already closed and cannot be reopened."
                             );
                             return;
-                          }
+                        }
                           setSelectedDate(date);
                           setMessage("");
+                          setOpenCashIn("");
+                          setOpenCashOut("");
+                          setIsOpenModalOpen(true);
                         }}
                         className={`relative h-20 bg-white p-2 text-left text-sm transition hover:bg-slate-50 sm:h-24 ${
                           isSelected ? "ring-2 ring-emerald-400" : ""
@@ -520,6 +400,306 @@ export default function PeriodPage() {
             </div>
           </div>
         </section>
+
+        {isOpenModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4">
+            <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Open Period
+                </h3>
+                <button
+                  type="button"
+                  className="text-slate-400 hover:text-slate-600"
+                  onClick={() => setIsOpenModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                Create a new period for the selected date.
+              </p>
+
+              <form
+                className="mt-4 grid gap-4"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setMessage("");
+                  if (!selectedDate) {
+                    setMessage("Please select a business date.");
+                    return;
+                  }
+                  if (selectedPeriod?.status === "CLOSED") {
+                    setMessage("That day is already closed and cannot be reopened.");
+                    return;
+                  }
+                  if (
+                    parseNumberInput(openCashIn) < 0 ||
+                    parseNumberInput(openCashOut) < 0
+                  ) {
+                    setMessage("Cash values must be zero or greater.");
+                    return;
+                  }
+                  openPeriodMutation.mutate({
+                    businessDate: formatDate(selectedDate),
+                    totalCashInOpen: parseNumberInput(openCashIn),
+                    totalCashOutOpen: parseNumberInput(openCashOut),
+                  });
+                }}
+              >
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Business Date
+                  </label>
+                  <input
+                    className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                    value={selectedDate ? formatDate(selectedDate) : ""}
+                    readOnly
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Total Cash In (Open)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="55000"
+                    value={openCashIn}
+                    onChange={(event) =>
+                      setOpenCashIn(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Total Cash Out (Open)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="11000"
+                    value={openCashOut}
+                    onChange={(event) =>
+                      setOpenCashOut(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                    onClick={() => setIsOpenModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                    disabled={openPeriodMutation.isPending || !businessId}
+                  >
+                    {openPeriodMutation.isPending ? "Opening..." : "Open Period"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {isCloseModalOpen && activePeriod?.status === "OPEN" && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4">
+            <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Close Period
+                </h3>
+                <button
+                  type="button"
+                  className="text-slate-400 hover:text-slate-600"
+                  onClick={() => setIsCloseModalOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter closing totals for {activePeriod.businessDate}.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span>Opened totals</span>
+                  <span className="font-semibold text-slate-700">
+                    In: {activePeriod.totalCashInOpen} / Out:{" "}
+                    {activePeriod.totalCashOutOpen}
+                  </span>
+                </div>
+              </div>
+
+              <form
+                className="mt-4 grid gap-4 md:grid-cols-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setMessage("");
+                  if (!activePeriod?.id) {
+                    setMessage("No active period to close.");
+                    return;
+                  }
+                  if (
+                    parseNumberInput(closeCashIn) < 0 ||
+                    parseNumberInput(closeCashOut) < 0 ||
+                    parseNumberInput(closeCashInAtm) < 0 ||
+                    parseNumberInput(closeSafeDrop) < 0
+                  ) {
+                    setMessage("Cash values must be zero or greater.");
+                    return;
+                  }
+                  const basePayload = {
+                    periodId: activePeriod.id,
+                    totalCashInClose: parseNumberInput(closeCashIn),
+                    totalCashOutClose: parseNumberInput(closeCashOut),
+                    cashInAtmClose: parseNumberInput(closeCashInAtm),
+                    safeDropClose: parseNumberInput(closeSafeDrop),
+                  };
+                  if (closeImages.length > 0) {
+                    const formData = new FormData();
+                    formData.append("periodId", basePayload.periodId);
+                    formData.append(
+                      "totalCashInClose",
+                      String(basePayload.totalCashInClose)
+                    );
+                    formData.append(
+                      "totalCashOutClose",
+                      String(basePayload.totalCashOutClose)
+                    );
+                    formData.append(
+                      "cashInAtmClose",
+                      String(basePayload.cashInAtmClose ?? 0)
+                    );
+                    formData.append(
+                      "safeDropClose",
+                      String(basePayload.safeDropClose ?? 0)
+                    );
+                    closeImages.forEach((file) => {
+                      formData.append("images", file);
+                    });
+                    closePeriodMutation.mutate(formData);
+                    return;
+                  }
+                  closePeriodMutation.mutate(basePayload);
+                }}
+              >
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Business Date
+                  </label>
+                  <input
+                    className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                    value={activePeriod.businessDate}
+                    readOnly
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Total Cash In (Close)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={closeCashIn}
+                    onChange={(event) =>
+                      setCloseCashIn(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Total Cash Out (Close)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={closeCashOut}
+                    onChange={(event) =>
+                      setCloseCashOut(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Cash In ATM (Close)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={closeCashInAtm}
+                    onChange={(event) =>
+                      setCloseCashInAtm(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-slate-700">
+                    Safe Drop (Close)
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0"
+                    value={closeSafeDrop}
+                    onChange={(event) =>
+                      setCloseSafeDrop(formatNumberInput(event.target.value))
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    Upload Close Images
+                  </label>
+                  <input
+                    type="file"
+                    name="images"
+                    multiple
+                    className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm"
+                    onChange={(event) =>
+                      setCloseImages(Array.from(event.target.files ?? []))
+                    }
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                    onClick={() => setIsCloseModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
+                    disabled={closePeriodMutation.isPending || !businessId}
+                  >
+                    {closePeriodMutation.isPending ? "Closing..." : "Close Period"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </AuthGuard>
   );

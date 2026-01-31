@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { AuthGuard } from "@/app/context/authGuard";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { payoutService, PayoutCreatePayload } from "@/app/services/payoutService";
 import { winnerService } from "@/app/services/winnerService";
@@ -134,7 +135,7 @@ export default function PayoutsPage() {
               event.preventDefault();
               setMessage("");
               setError("");
-              if (!amount || Number(amount) <= 0) {
+              if (!amount || parseNumberInput(amount) <= 0) {
                 setError("Enter a valid payout amount.");
                 return;
               }
@@ -146,7 +147,7 @@ export default function PayoutsPage() {
               const payload: PayoutCreatePayload = {
                 winnerID: winnerId || undefined,
                 winnerName: winnerId ? selectedWinner?.playerName : winnerName,
-                amount: Number(amount),
+                amount: parseNumberInput(amount),
                 payoutDate,
                 status,
                 remarks,
@@ -194,12 +195,14 @@ export default function PayoutsPage() {
                 Payout Amount
               </label>
               <input
-                type="number"
-                min={0}
+                type="text"
+                inputMode="decimal"
                 className="mt-2 w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-base"
                 placeholder="0"
                 value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                onChange={(event) =>
+                  setAmount(formatNumberInput(event.target.value))
+                }
               />
             </div>
             <div>

@@ -33,6 +33,7 @@ export interface PayoutPage {
   totalElements: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizePayoutPage(data: any): PayoutPage {
   if (!data) {
     return {
@@ -84,5 +85,11 @@ export const payoutService = {
   getPayoutsPage: async (page: number, size: number): Promise<PayoutPage> => {
     const res = await api.get("/payouts/all", { params: { page, size } });
     return normalizePayoutPage(res.data);
+  },
+  getPayoutsByPeriod: async (periodId: string): Promise<PayoutData[]> => {
+    const res = await api.get(`/payouts/period/${periodId}`);
+    const data = res.data;
+    if (!data) return [];
+    return Array.isArray(data) ? data : [data];
   },
 };

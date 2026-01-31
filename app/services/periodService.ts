@@ -49,7 +49,7 @@ export const periodService = {
     const res = await api.post("/periods/open", payload);
     return res.data;
   },
-  closePeriod: async (payload: ClosePeriodPayload) => {
+  closePeriod: async (payload: ClosePeriodPayload | FormData) => {
     const res = await api.post("/periods/close", payload);
     return res.data;
   },

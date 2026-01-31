@@ -21,6 +21,7 @@ import {
 } from "@/app/services/userService";
 import { UserRole } from "@/app/lib/auth";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 function getBusinessId(business: BusinessData) {
   return business.id ?? business._id ?? "";
@@ -39,10 +40,14 @@ export default function BusinessSettingsPage() {
   const [userPage, setUserPage] = useState(0);
   const userPageSize = 10;
   const [editingBusinessId, setEditingBusinessId] = useState<string | null>(null);
-  const [businessDraft, setBusinessDraft] = useState<BusinessUpsert>({
+  const [businessDraft, setBusinessDraft] = useState<{
+    name: string;
+    location: string;
+    numberOfMachines: string;
+  }>({
     name: "",
     location: "",
-    numberOfMachines: 0,
+    numberOfMachines: "",
   });
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [userDraft, setUserDraft] = useState<UserUpdateData>({
@@ -215,14 +220,16 @@ export default function BusinessSettingsPage() {
                           {isEditing ? (
                             <>
                               <input
-                                type="number"
-                                min={0}
+                                type="text"
+                                inputMode="decimal"
                                 className="w-28 rounded-md border border-slate-300 px-3 py-2 text-sm"
                                 value={businessDraft.numberOfMachines}
                                 onChange={(event) =>
                                   setBusinessDraft((prev) => ({
                                     ...prev,
-                                    numberOfMachines: Number(event.target.value),
+                                    numberOfMachines: formatNumberInput(
+                                      event.target.value
+                                    ),
                                   }))
                                 }
                               />
@@ -238,7 +245,12 @@ export default function BusinessSettingsPage() {
                                 onClick={() =>
                                   updateBusinessMutation.mutate({
                                     id: id || null,
-                                    data: businessDraft,
+                                    data: {
+                                      ...businessDraft,
+                                      numberOfMachines: parseNumberInput(
+                                        businessDraft.numberOfMachines
+                                      ),
+                                    },
                                   })
                                 }
                                 type="button"
@@ -254,7 +266,9 @@ export default function BusinessSettingsPage() {
                                 setBusinessDraft({
                                   name: business?.name,
                                   location: business?.location,
-                                  numberOfMachines: business?.numberOfMachines,
+                                  numberOfMachines: formatNumberInput(
+                                    String(business?.numberOfMachines ?? "")
+                                  ),
                                 });
                               }}
                               type="button"
@@ -304,14 +318,16 @@ export default function BusinessSettingsPage() {
                         <div>
                           {isEditing ? (
                             <input
-                              type="number"
-                              min={0}
+                              type="text"
+                              inputMode="decimal"
                               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                               value={businessDraft.numberOfMachines}
                               onChange={(event) =>
                                 setBusinessDraft((prev) => ({
                                   ...prev,
-                                  numberOfMachines: Number(event.target.value),
+                                  numberOfMachines: formatNumberInput(
+                                    event.target.value
+                                  ),
                                 }))
                               }
                             />
@@ -336,7 +352,12 @@ export default function BusinessSettingsPage() {
                                 onClick={() =>
                                   updateBusinessMutation.mutate({
                                     id: id || null,
-                                    data: businessDraft,
+                                    data: {
+                                      ...businessDraft,
+                                      numberOfMachines: parseNumberInput(
+                                        businessDraft.numberOfMachines
+                                      ),
+                                    },
                                   })
                                 }
                                 type="button"
@@ -352,7 +373,9 @@ export default function BusinessSettingsPage() {
                                 setBusinessDraft({
                                   name: business?.name,
                                   location: business?.location,
-                                  numberOfMachines: business?.numberOfMachines,
+                                  numberOfMachines: formatNumberInput(
+                                    String(business?.numberOfMachines ?? "")
+                                  ),
                                 });
                               }}
                               type="button"

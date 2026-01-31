@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AuthGuard } from "@/app/context/authGuard";
 import { winnerService } from "@/app/services/winnerService";
@@ -17,6 +18,7 @@ type UpcomingPlan = {
 const formatMoney = (value: number) => `$${value.toLocaleString("en-US")}`;
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const { data: winners = [] } = useQuery({
     queryKey: ["winners"],
     queryFn: winnerService.getWinners,
@@ -36,6 +38,7 @@ export default function NotificationsPage() {
         })
         .map((item) => ({
           id: `${winner.id}-${item.date}-${item.amount}`,
+          winnerId: winner.id,
           playerName: winner.playerName,
           date: item.date,
           amount: Number(item.amount) || 0,
@@ -87,8 +90,10 @@ export default function NotificationsPage() {
                 const daysLeft = Math.max(0, Math.ceil(diffMs / 86400000));
                 const isUrgent = daysLeft <= 3;
                 return (
-                  <div
+                  <button
                     key={plan.id}
+                    type="button"
+                    onClick={() => router.push(`/winners/${plan.winnerId}`)}
                     className={`rounded-xl border px-4 py-3 ${
                       isUrgent
                         ? "border-rose-200 bg-rose-50"
@@ -130,7 +135,7 @@ export default function NotificationsPage() {
                       <span>Status: {plan.status}</span>
                       <span>{daysLeft} days left</span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
