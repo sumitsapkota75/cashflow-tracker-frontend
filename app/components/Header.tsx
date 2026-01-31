@@ -50,7 +50,6 @@ export default function Header() {
           { name: "Dashboard", href: "/" },
           { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
-          { name: "Reports", href: "/machines/reports" },
           { name: "Winners", href: "/winners" },
           { name: "Payouts", href: "/payouts" },
           { name: "Business Settings", href: "/business/settings" },
@@ -60,7 +59,6 @@ export default function Header() {
           { name: "Dashboard", href: "/" },
           { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
-          { name: "Reports", href: "/machines/reports" },
           { name: "Winners", href: "/winners" },
           { name: "Payouts", href: "/payouts" },
           { name: "Business Settings", href: "/business/settings" },
@@ -70,7 +68,6 @@ export default function Header() {
           { name: "Dashboard", href: "/" },
           { name: "Period", href: "/period" },
           { name: "Machine Entry", href: "/machines/open" },
-          { name: "Reports", href: "/machines/reports" },
           { name: "Payouts", href: "/payouts" },
         ];
       default:
