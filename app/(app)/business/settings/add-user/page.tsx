@@ -149,7 +149,7 @@ export default function AddUserPage() {
             </select>
           </div>
           <button
-            className="inline-flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
             type="submit"
             disabled={createMutation.isPending}
           >

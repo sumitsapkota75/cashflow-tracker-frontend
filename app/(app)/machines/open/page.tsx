@@ -116,7 +116,7 @@ export default function MachineEntryPage() {
             { label: "Machine Entry" },
           ]}
         />
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/60 p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -130,7 +130,7 @@ export default function MachineEntryPage() {
               </p>
             </div>
             {hasOpenPeriod ? (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base font-semibold text-emerald-700">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-base font-semibold text-blue-700">
                 Period for {activePeriod?.businessDate} is open.
               </div>
             ) : (
@@ -167,7 +167,7 @@ export default function MachineEntryPage() {
               </p>
               <a
                 href="/period"
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 Go to Periods
               </a>
@@ -316,7 +316,7 @@ export default function MachineEntryPage() {
 
               <div className="md:col-span-2">
                 <button
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900 px-8 py-3 text-base font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                   type="submit"
                   disabled={
                     createEntryMutation.isPending ||

@@ -148,7 +148,7 @@ export default function AddWinnerPage() {
           ]}
         />
 
-        <Card className="p-6">
+        <Card className="bg-gradient-to-br from-white via-white to-blue-50/60 p-6">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold text-slate-900">Add Winner</h1>
             <p className="text-sm text-slate-500">

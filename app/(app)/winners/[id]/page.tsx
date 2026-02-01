@@ -104,7 +104,7 @@ export default function WinnerDetailPage() {
             { label: "Winner Details" },
           ]}
         />
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/60 p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
@@ -190,7 +190,7 @@ export default function WinnerDetailPage() {
                 {winnerPayouts.length} payouts
               </span>
               <button
-                className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
                 type="button"
                 onClick={() => setIsModalOpen(true)}
               >
@@ -386,7 +386,7 @@ export default function WinnerDetailPage() {
                   </button>
                   <button
                     type="submit"
-                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                     disabled={createPayoutMutation.isPending}
                   >
                     {createPayoutMutation.isPending ? "Saving..." : "Save Payout"}

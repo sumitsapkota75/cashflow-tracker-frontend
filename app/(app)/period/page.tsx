@@ -181,7 +181,7 @@ export default function PeriodPage() {
             { label: "Period" },
           ]}
         />
-        <section className="rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/60 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-semibold text-slate-900">
@@ -205,17 +205,17 @@ export default function PeriodPage() {
             )}
           </div>
           {activePeriod?.status === "OPEN" && (
-            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+            <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-emerald-600">
+                  <p className="text-xs uppercase tracking-wide text-blue-600">
                     Active Period
                   </p>
                   <p className="font-semibold">
                     {activePeriod.businessDate} is currently open.
                   </p>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-semibold text-blue-700">
                   OPEN
                 </span>
               </div>
@@ -289,7 +289,7 @@ export default function PeriodPage() {
               </span>
               <div className="flex items-center gap-3 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  <span className="h-2 w-2 rounded-full bg-blue-500" />
                   Open
                 </span>
                 <span className="flex items-center gap-1">
@@ -369,13 +369,13 @@ export default function PeriodPage() {
                           setIsOpenModalOpen(true);
                         }}
                         className={`relative h-20 bg-white p-2 text-left text-sm transition hover:bg-slate-50 sm:h-24 ${
-                          isSelected ? "ring-2 ring-emerald-400" : ""
+                          isSelected ? "ring-2 ring-blue-400" : ""
                         }`}
                       >
                         <span
                           className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
                             isToday
-                              ? "bg-emerald-500 text-white"
+                              ? "bg-blue-600 text-white"
                               : "text-slate-600"
                           }`}
                         >
@@ -394,29 +394,29 @@ export default function PeriodPage() {
                               <span
                                 className={`font-medium ${
                                   (netValue ?? 0) < 0
-                                    ? "text-rose-600"
-                                    : "text-emerald-600"
-                                }`}
-                              >
-                                {netValue ?? 0}
-                              </span>
-                            </div>
+                                ? "text-rose-600"
+                                : "text-emerald-600"
+                            }`}
+                          >
+                            {netValue ?? 0}
+                          </span>
+                        </div>
                           </div>
                         )}
                         {status && (
                           <span
                             className={`absolute bottom-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                               status === "OPEN"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-slate-100 text-slate-600"
-                            }`}
-                          >
-                            {status === "OPEN" ? "Open" : "Closed"}
-                          </span>
-                        )}
-                        {isActiveOpen && (
-                          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-400" />
-                        )}
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {status === "OPEN" ? "Open" : "Closed"}
+                        </span>
+                      )}
+                      {isActiveOpen && (
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-400" />
+                      )}
                       </button>
                     );
                   })}
@@ -533,7 +533,7 @@ export default function PeriodPage() {
                   </button>
                   <button
                     type="submit"
-                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                     disabled={openPeriodMutation.isPending || !businessId}
                   >
                     {openPeriodMutation.isPending ? "Opening..." : "Open Period"}

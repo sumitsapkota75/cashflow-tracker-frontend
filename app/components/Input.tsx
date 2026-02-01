@@ -31,7 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={descriptionId}
           className={cn(
-            "h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100",
+            "h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100",
             error && "border-rose-300 focus:border-rose-400 focus:ring-rose-100",
             className
           )}

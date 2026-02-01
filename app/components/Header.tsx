@@ -12,6 +12,7 @@ import {
   HardDrive,
   LayoutDashboard,
   LogOut,
+  UserCircle2,
   Settings,
   Trophy,
 } from "lucide-react";
@@ -90,17 +91,17 @@ export default function Header() {
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-600/20">
             <span className="text-base font-semibold">MT</span>
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900">
               {user?.businessName || "Machine Tracker"}
             </p>
-            <p className="text-xs text-slate-500">Operations console</p>
+            <p className="text-xs text-slate-500">Enterprise cash console</p>
           </div>
         </div>
 
@@ -108,7 +109,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setIsNotificationsOpen(true)}
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
@@ -123,7 +124,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => setIsUserMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-2 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-300"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300"
               aria-expanded={isUserMenuOpen}
               aria-haspopup="menu"
             >
@@ -137,7 +138,7 @@ export default function Header() {
             </button>
 
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+              <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
                 <div className="px-4 py-3">
                   <p className="text-xs text-slate-400">Signed in as</p>
                   <p className="text-sm font-semibold text-slate-900">
@@ -146,6 +147,14 @@ export default function Header() {
                   <p className="text-xs text-slate-500">{user?.role || ""}</p>
                 </div>
                 <div className="border-t border-slate-100">
+                  <Link
+                    href="/account"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <UserCircle2 className="h-4 w-4" />
+                    My Account
+                  </Link>
                   <button
                     type="button"
                     className="flex w-full items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
@@ -178,7 +187,7 @@ export default function Header() {
                 className={cn(
                   "flex items-center gap-2 rounded-full px-4 py-2 font-semibold transition",
                   isActive
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >

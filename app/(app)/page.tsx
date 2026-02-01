@@ -2,6 +2,12 @@ import { AuthGuard } from "../context/authGuard";
 import Breadcrumbs from "../components/Breadcrumbs";
 import Card from "../components/Card";
 import { ButtonLink } from "../components/Button";
+import {
+  CalendarRange,
+  CreditCard,
+  HardDrive,
+  Trophy,
+} from "lucide-react";
 
 export default function Dashboard() {
   return (
@@ -9,7 +15,7 @@ export default function Dashboard() {
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard" }]} />
 
-        <Card className="px-6 py-6">
+        <Card className="bg-gradient-to-br from-white via-white to-blue-50/70 px-6 py-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">
@@ -24,10 +30,22 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/period" variant="secondary">
+              <ButtonLink href="/machines/open" className="gap-2" size="lg">
+                <HardDrive className="h-4 w-4" />
+                New Machine Entry
+              </ButtonLink>
+              <ButtonLink href="/payouts" variant="secondary" className="gap-2" size="lg">
+                <CreditCard className="h-4 w-4" />
+                Record Payout
+              </ButtonLink>
+              <ButtonLink href="/winners/add" variant="secondary" className="gap-2">
+                <Trophy className="h-4 w-4" />
+                Add Winner
+              </ButtonLink>
+              <ButtonLink href="/period" variant="ghost" className="gap-2">
+                <CalendarRange className="h-4 w-4" />
                 Manage Period
               </ButtonLink>
-              <ButtonLink href="/machines/open">New Machine Entry</ButtonLink>
             </div>
           </div>
         </Card>

@@ -57,10 +57,10 @@ export default function NotificationsPage() {
           ]}
         />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/60 p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.3em] text-blue-600">
                 Notifications
               </p>
               <h1 className="text-2xl font-semibold text-slate-900">
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
                 Payment plans scheduled for the coming days.
               </p>
             </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
               {upcomingPlans.length} items
             </span>
           </div>

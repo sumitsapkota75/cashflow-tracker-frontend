@@ -91,7 +91,7 @@ export default function WinnersPage() {
       <div className="space-y-6">
         <Breadcrumbs items={[{ label: "Dashboard", href: "/" }, { label: "Winners" }]} />
 
-        <Card className="px-6 py-6">
+        <Card className="bg-gradient-to-br from-white via-white to-blue-50/70 px-6 py-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600">Winners</p>

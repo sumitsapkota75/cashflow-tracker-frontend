@@ -43,7 +43,7 @@ export default function Modal({ open, onClose, title, children, className }: Mod
         role="dialog"
         aria-modal="true"
         className={cn(
-          "relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-xl",
+          "relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.15)]",
           className
         )}
       >

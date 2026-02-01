@@ -8,6 +8,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { payoutService, PayoutCreatePayload } from "@/app/services/payoutService";
 import { winnerService } from "@/app/services/winnerService";
 import Link from "next/link";
+import Card from "@/app/components/Card";
+import Button from "@/app/components/Button";
 
 type PayoutRow = {
   id: string;
@@ -93,24 +95,24 @@ export default function PayoutsPage() {
             { label: "Payouts" },
           ]}
         />
-        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-5 text-white sm:px-6 sm:py-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-emerald-200">
+        <Card className="bg-gradient-to-br from-white via-white to-blue-50/70 px-4 py-5 sm:px-6 sm:py-6">
+          <p className="text-xs uppercase tracking-[0.3em] text-blue-600">
             Payouts
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold md:text-3xl">
+              <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
                 Log payouts with confidence
               </h1>
-              <p className="text-sm text-slate-200">
+              <p className="text-sm text-slate-500">
                 Record winner payouts or other cash outflows per period.
               </p>
             </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm">
+            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
               {rows.length} payouts logged
             </div>
           </div>
-        </section>
+        </Card>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -257,13 +259,9 @@ export default function PayoutsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                disabled={createPayoutMutation.isPending}
-              >
+              <Button type="submit" disabled={createPayoutMutation.isPending}>
                 {createPayoutMutation.isPending ? "Saving..." : "Save Payout"}
-              </button>
+              </Button>
             </div>
           </form>
         </section>

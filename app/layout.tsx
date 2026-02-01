@@ -1,10 +1,10 @@
 import { ThemeModeScript } from "flowbite-react";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Manrope } from "next/font/google";
 
 import "./globals.css";
 import Providers from "./providers";
 
-const appSans = Plus_Jakarta_Sans({
+const appSans = Manrope({
   subsets: ["latin"],
   variable: "--font-app-sans",
 });

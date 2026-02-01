@@ -137,7 +137,7 @@ export default function MachineEntryDetailPage() {
           ]}
         />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-white to-blue-50/60 p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">

@@ -3,8 +3,8 @@
 @source "../.flowbite-react/class-list.json";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f6f8fc;
+  --foreground: #0b1220;
 }
 
 @theme inline {
