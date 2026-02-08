@@ -17,12 +17,6 @@ type PlanItem = {
   amount: string;
 };
 
-type PaymentPlanPayloadItem = {
-  date: string;
-  amount: string;
-  status: string;
-};
-
 const DEFAULT_STATUS = "PARTIALLY_PAID";
 
 const newPlanItem = (): PlanItem => ({
@@ -31,10 +25,10 @@ const newPlanItem = (): PlanItem => ({
   amount: "",
 });
 
-const buildPaymentPlan = (items: PlanItem[]): PaymentPlanPayloadItem[] => {
+const buildPaymentPlan = (items: PlanItem[]) => {
   return items.map((item) => ({
     date: (item.date ?? "").trim(),
-    amount: String(parseNumberInput(item.amount ?? "")),
+    amount: parseNumberInput(item.amount ?? ""),
     status: "SCHEDULED",
   }));
 };
