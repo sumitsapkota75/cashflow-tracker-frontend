@@ -38,6 +38,7 @@ export interface PeriodData {
   closedByUserId?: string | null;
   payout?: number | null;
   physicalCashCollected?: number | null;
+  images?: string[];
 }
 
 export interface PeriodListResponse {

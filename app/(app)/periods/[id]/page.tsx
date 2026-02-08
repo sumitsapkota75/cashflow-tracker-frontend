@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -53,6 +54,21 @@ export default function PeriodDetailPage() {
     netOpenValue != null && netCloseValue != null
       ? netCloseValue - netOpenValue
       : null;
+
+  const images = useMemo(() => period?.images ?? [], [period?.images]);
+  const imageBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ??
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
+    "";
+  const resolveImageUrl = (value: string) => {
+    if (!value) return value;
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+    if (!imageBaseUrl) return value;
+    return `${imageBaseUrl}/${value.replace(/^\//, "")}`;
+  };
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   return (
     <AuthGuard>
@@ -345,6 +361,43 @@ export default function PeriodDetailPage() {
           )}
         </section>
 
+        {images.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Period Images
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Tap to view in full size.
+                </p>
+              </div>
+              <span className="text-xs text-slate-400">
+                {images.length} files
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {images.map((src, index) => {
+                const imageUrl = resolveImageUrl(src);
+                return (
+                  <button
+                    key={`${src}-${index}`}
+                    type="button"
+                    className="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50 text-left shadow-sm transition hover:border-slate-300 hover:bg-white"
+                    onClick={() => setActiveImage(imageUrl)}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`Period upload ${index + 1}`}
+                      className="h-32 w-full object-cover"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">
@@ -430,6 +483,26 @@ export default function PeriodDetailPage() {
           )}
         </section>
       </div>
+      {activeImage && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/70 px-4">
+          <div className="relative w-full max-w-4xl">
+            <button
+              type="button"
+              className="absolute -top-4 right-0 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow hover:bg-white"
+              onClick={() => setActiveImage(null)}
+            >
+              Close
+            </button>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <img
+                src={activeImage}
+                alt="Full size"
+                className="max-h-[80vh] w-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGuard>
   );
 }
