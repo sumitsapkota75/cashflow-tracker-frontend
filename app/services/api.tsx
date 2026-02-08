@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://10.2.1.227:8080",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
 });
 
 // Add auth interceptor
