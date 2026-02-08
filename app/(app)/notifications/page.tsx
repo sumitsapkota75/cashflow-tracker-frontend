@@ -8,6 +8,7 @@ import { winnerService } from "@/app/services/winnerService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 type UpcomingPlan = {
+  winnerId: string;
   id: string;
   playerName: string;
   date: string;
