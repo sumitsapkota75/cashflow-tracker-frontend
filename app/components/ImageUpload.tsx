@@ -99,6 +99,9 @@ export default function ImageUpload({
               >
                 ×
               </button>
+              <div className="mt-1 truncate text-[10px] text-slate-500">
+                {img.file.name}
+              </div>
             </div>
           ))}
         </div>

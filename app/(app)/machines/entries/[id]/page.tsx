@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AuthGuard } from "@/app/context/authGuard";
@@ -122,9 +122,29 @@ export default function MachineEntryDetailPage() {
     if (!entry) return [];
     return Object.entries(entry).filter(([key]) => {
       const normalizedKey = key.toLowerCase();
-      return normalizedKey !== "entryid" && normalizedKey !== "machineid";
+      return (
+        normalizedKey !== "entryid" &&
+        normalizedKey !== "machineid" &&
+        normalizedKey !== "haspreviousentry" &&
+        normalizedKey !== "images"
+      );
     });
   }, [entry]);
+
+  const images = useMemo(() => entry?.images ?? [], [entry?.images]);
+  const imageBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ??
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
+    "";
+  const resolveImageUrl = (value: string) => {
+    if (!value) return value;
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+    if (!imageBaseUrl) return value;
+    return `${imageBaseUrl}/${value.replace(/^\//, "")}`;
+  };
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   return (
     <AuthGuard>
@@ -334,7 +354,63 @@ export default function MachineEntryDetailPage() {
             </div>
           )}
         </section>
+
+        {images.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Uploaded Images
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Tap to view in full size.
+                </p>
+              </div>
+              <span className="text-xs text-slate-400">
+                {images.length} files
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {images.map((src, index) => {
+                const imageUrl = resolveImageUrl(src);
+                return (
+                <button
+                  key={`${src}-${index}`}
+                  type="button"
+                  className="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50 text-left shadow-sm transition hover:border-slate-300 hover:bg-white"
+                  onClick={() => setActiveImage(imageUrl)}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Entry upload ${index + 1}`}
+                    className="h-32 w-full object-cover"
+                  />
+                </button>
+              )})}
+            </div>
+          </section>
+        )}
       </div>
+      {activeImage && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/70 px-4">
+          <div className="relative w-full max-w-4xl">
+            <button
+              type="button"
+              className="absolute -top-4 right-0 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow hover:bg-white"
+              onClick={() => setActiveImage(null)}
+            >
+              Close
+            </button>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+              <img
+                src={activeImage}
+                alt="Full size"
+                className="max-h-[80vh] w-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGuard>
   );
 }

@@ -196,16 +196,27 @@ export default function MachineEntryPage() {
                   return;
                 }
 
-                createEntryMutation.mutate({
+                const payload = {
                   machineId,
-                  reportCashIn: String(parseNumberInput(reportCashIn)),
-                  reportCashOut: String(parseNumberInput(reportCashOut)),
+                  reportCashIn: parseNumberInput(reportCashIn),
+                  reportCashOut: parseNumberInput(reportCashOut),
                   physicalCash: parseNumberInput(physicalCash),
-                  netFromReport: String(parseNumberInput(netFromReport)),
+                  netFromReport: parseNumberInput(netFromReport),
                   remarks,
                   safeDroppedAmount: parseNumberInput(safeDroppedAmount),
                   reason,
+                };
+                const formData = new FormData();
+                formData.append(
+                  "payload",
+                  new Blob([JSON.stringify(payload)], {
+                    type: "application/json",
+                  })
+                );
+                images.forEach((img) => {
+                  formData.append("files", img.file);
                 });
+                createEntryMutation.mutate(formData);
               }}
             >
               <div className="md:col-span-2">

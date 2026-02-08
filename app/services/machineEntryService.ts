@@ -17,6 +17,7 @@ export interface MachineEntryData {
   openedAt?: string;
   username?: string;
   hasPreviousEntry?: boolean;
+  images?: string[];
 }
 
 export interface MachineEntryPayload {
@@ -46,7 +47,7 @@ export const machineEntryService = {
     });
     return res.data ?? null;
   },
-  createEntry: async (payload: MachineEntryPayload) => {
+  createEntry: async (payload: FormData) => {
     const res = await api.post("/machine-entry", payload);
     return res.data;
   },

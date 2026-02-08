@@ -10,6 +10,7 @@ import {
   PeriodData,
 } from "@/app/services/periodService";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import ImageUpload, { ImageFile } from "@/app/components/ImageUpload";
 import { formatNumberInput, parseNumberInput } from "@/app/lib/numberInput";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -47,7 +48,7 @@ export default function PeriodPage() {
   const [closeCashOut, setCloseCashOut] = useState("");
   const [closeCashInAtm, setCloseCashInAtm] = useState("");
   const [closeSafeDrop, setCloseSafeDrop] = useState("");
-  const [closeImages, setCloseImages] = useState<File[]>([]);
+  const [closeImages, setCloseImages] = useState<ImageFile[]>([]);
   const [message, setMessage] = useState("");
   const businessId = user?.businessId ?? "";
 
@@ -546,7 +547,7 @@ export default function PeriodPage() {
 
         {isCloseModalOpen && activePeriod?.status === "OPEN" && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4">
-            <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-slate-900">
                   Close Period
@@ -598,32 +599,17 @@ export default function PeriodPage() {
                     cashInAtmClose: parseNumberInput(closeCashInAtm),
                     safeDropClose: parseNumberInput(closeSafeDrop),
                   };
-                  if (closeImages.length > 0) {
-                    const formData = new FormData();
-                    formData.append("periodId", basePayload.periodId);
-                    formData.append(
-                      "totalCashInClose",
-                      String(basePayload.totalCashInClose)
-                    );
-                    formData.append(
-                      "totalCashOutClose",
-                      String(basePayload.totalCashOutClose)
-                    );
-                    formData.append(
-                      "cashInAtmClose",
-                      String(basePayload.cashInAtmClose ?? 0)
-                    );
-                    formData.append(
-                      "safeDropClose",
-                      String(basePayload.safeDropClose ?? 0)
-                    );
-                    closeImages.forEach((file) => {
-                      formData.append("images", file);
-                    });
-                    closePeriodMutation.mutate(formData);
-                    return;
-                  }
-                  closePeriodMutation.mutate(basePayload);
+                  const formData = new FormData();
+                  formData.append(
+                    "payload",
+                    new Blob([JSON.stringify(basePayload)], {
+                      type: "application/json",
+                    })
+                  );
+                  closeImages.forEach((img) => {
+                    formData.append("files", img.file);
+                  });
+                  closePeriodMutation.mutate(formData);
                 }}
               >
                 <div className="space-y-1 md:col-span-2">
@@ -700,18 +686,12 @@ export default function PeriodPage() {
                     required
                   />
                 </div>
-                <div className="space-y-1 md:col-span-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    Upload Close Images
-                  </label>
-                  <input
-                    type="file"
-                    name="images"
-                    multiple
-                    className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm"
-                    onChange={(event) =>
-                      setCloseImages(Array.from(event.target.files ?? []))
-                    }
+                <div className="md:col-span-2">
+                  <ImageUpload
+                    images={closeImages}
+                    setImages={setCloseImages}
+                    maxImages={6}
+                    label="Upload Close Images"
                   />
                 </div>
                 <div className="md:col-span-2 flex items-center justify-end gap-2 pt-2">
