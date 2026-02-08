@@ -12,7 +12,7 @@ https://cashflow-tracker-frontend.vercel.app/
 
 ```
 user: owner
-password: admin@123
+password: admin123
 ```
 
 ## Tech Stack
