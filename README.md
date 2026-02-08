@@ -63,7 +63,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 For development backend, use:
 
 ```
-NEXT_PUBLIC_API_BASE_URL=https://cashflow-tracker-frontend.vercel.app
+NEXT_PUBLIC_API_BASE_URL=https://cashflow-tracker-api-java.onrender.com
 ```
 
 ## Build
